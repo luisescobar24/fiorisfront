@@ -1,82 +1,93 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import '../estilos/pagina86.css';
 
 interface Producto {
-  nombre: string;
-  estado: number;
-  habilitado?: boolean; // true = se puede pedir, false = inhabilitado
+  ID_Producto: number;
+  Nombre: string;
+  Precio: number;
+  Activo: boolean;
+  Categoria?: string;
 }
 
-interface Mesa {
-  numero: number;
-  productos: Producto[];
-  cliente?: any;
-}
+const Pagina86: React.FC = () => {
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [busqueda, setBusqueda] = useState("");
 
-interface Salon {
-  salon: string;
-  mesas: Mesa[];
-}
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-interface Props {
-  salones: Salon[];
-}
+  useEffect(() => {
+    fetch(`${backendUrl}/productos`, {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => setProductos(data))
+      .catch((err) => console.error(err));
+  }, [backendUrl]);
 
-const Pagina86: React.FC<Props> = ({ salones }) => {
+  const handleToggleActivo = async (id: number, activo: boolean) => {
+    await fetch(`${backendUrl}/productos/${id}/estado`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ activo: !activo }),
+    });
+    setProductos((prev) =>
+      prev.map((p) =>
+        p.ID_Producto === id ? { ...p, Activo: !activo } : p
+      )
+    );
+  };
+
+  const productosFiltrados = productos.filter((p) =>
+    p.Nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
   return (
-    <div className="mozo-pedidos-scroll">
-      {salones.map((salon) => (
-        <div key={salon.salon} style={{ marginBottom: 32 }}>
-          <h2 className="titulo-salon">{salon.salon}</h2>
-          {salon.mesas.map((mesa) => (
-            <div key={mesa.numero} className="mozo-mesa">
-              <h3>Mesa {mesa.numero}</h3>
-              <ul style={{ listStyle: "none", padding: 0 }}>
-                {mesa.productos.map((prod, idx) => (
-                  <li
-                    key={idx}
-                    className={
-                      prod.habilitado === false
-                        ? "producto-inhabilitado"
-                        : prod.estado === 2
-                        ? "producto-servido"
-                        : ""
-                    }
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: 6,
-                      color:
-                        prod.habilitado === false
-                          ? "#bdbdbd"
-                          : prod.estado === 2
-                          ? "#43e97b"
-                          : "#333",
-                      fontWeight: prod.estado === 2 ? 600 : 400,
-                      opacity: prod.habilitado === false ? 0.5 : 1,
-                      pointerEvents: prod.habilitado === false ? "none" : "auto",
-                      cursor:
-                        prod.habilitado === false ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {prod.estado === 2 ? (
-                      <span className="mozo-producto-check">✔️</span>
-                    ) : (
-                      <span style={{ width: 20, marginRight: 8 }} />
-                    )}
-                    {prod.nombre}
-                    {prod.habilitado === false && (
-                      <span style={{ color: "red", marginLeft: 8 }}>
-                        (No disponible)
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {/* Aquí irían los botones de cliente si los necesitas */}
-            </div>
+    <div className="pagina86-container">
+      <h2 className="pagina86-titulo">Gestión de Productos</h2>
+      <input
+        type="text"
+        placeholder="Buscar producto..."
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+        className="pagina86-busqueda"
+      />
+      <table className="pagina86-tabla">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Categoría</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {productosFiltrados.map((prod) => (
+            <tr
+              key={prod.ID_Producto}
+              className={prod.Activo ? "" : "producto-inactivo"}
+            >
+              <td>{prod.Nombre}</td>
+              <td>S/ {prod.Precio}</td>
+              <td>{prod.Categoria || "-"}</td>
+              <td>
+                <span className={prod.Activo ? "pagina86-estado-activo" : "pagina86-estado-inactivo"}>
+                  {prod.Activo ? "Activo" : "Inactivo"}
+                </span>
+              </td>
+              <td>
+                <button
+                  onClick={() => handleToggleActivo(prod.ID_Producto, prod.Activo)}
+                  className={`pagina86-btn ${prod.Activo ? "inactivo" : "activo"}`}
+                >
+                  {prod.Activo ? "Desactivar" : "Activar"}
+                </button>
+              </td>
+            </tr>
           ))}
-        </div>
-      ))}
+        </tbody>
+      </table>
     </div>
   );
 };

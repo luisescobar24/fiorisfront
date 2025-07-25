@@ -11,10 +11,11 @@ import ListaMesas from '../paginas/listamesas'; // Ajusta la ruta si es necesari
 import ListaCategorias from '../paginas/listacategorias'; // Ajusta la ruta si es necesario
 import ListaAreas from '../paginas/lista_areas'; // Ajusta la ruta si es necesario
 import '../estilos/perfil.css';
+import Pagina86 from './pagina86'; // Ajusta la ruta si es necesario
 
 const Perfil: React.FC = () => {
   const [vistaActual, setVistaActual] = useState<
-    'configuracion' | 'productos' | 'estadisticas' | 'usuarios' | 'salones' | 'mesas' | 'categorias' | 'areas'
+    'configuracion' | 'productos' | 'estadisticas' | 'usuarios' | 'salones' | 'mesas' | 'categorias' | 'areas' | 'pagina86'
   >('configuracion');
   const [usuario, setUsuario] = useState<{ Nombre: string; rol: { Nombre: string } } | null>(null);
   const [cargandoUsuario, setCargandoUsuario] = useState(true);
@@ -42,9 +43,10 @@ const Perfil: React.FC = () => {
 
   const botones = [
     { nombre: 'Configuración', valor: 'configuracion' },
+    { nombre: 'Gestión de Productos (86)', valor: 'pagina86' }, // ← Disponible para todos
   ];
 
-  // Solo para admin
+  // Si quieres que los demás botones (productos, estadísticas, etc.) sigan siendo solo para admin, déjalos en el bloque de admin
   if (usuario?.rol?.Nombre === 'ADMIN') {
     botones.push(
       { nombre: 'Productos', valor: 'productos' },
@@ -71,6 +73,8 @@ const Perfil: React.FC = () => {
         return <Configuracion />;
       case 'productos':
         return <Productos />;
+      case 'pagina86':
+        return <Pagina86 />; // ← Importa y muestra tu componente de gestión
       case 'estadisticas':
         return <Estadisticas />;
       case 'usuarios':

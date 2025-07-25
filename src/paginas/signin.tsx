@@ -57,6 +57,8 @@ export default function SignIn() {
         alert('Tu cuenta no está activa. Por favor, verifica tu correo o contacta al administrador.');
         return;
       }
+      localStorage.setItem('token', data.token);
+
 
       navigate('/paginaprincipal');
     } catch (error) {

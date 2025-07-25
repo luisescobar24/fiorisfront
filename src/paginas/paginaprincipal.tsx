@@ -3,6 +3,7 @@ import { User, ShoppingCart, X } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 
 type Producto = {
   ID_Producto: number;
@@ -10,6 +11,7 @@ type Producto = {
   Precio: number;
   ID_Categoria: number;
   ID_Area: number;
+  Activo?: boolean; // ← Añadido para evitar error de propiedad
 };
 
 type Categoria = {
@@ -254,74 +256,86 @@ const PaginaPrincipal = () => {
           </div>
         ) : (
           <>
-            {carrito.map((item) => (
-              <div key={item.id} className="seleccionado-item">
-                <div className="item-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <strong className="nombre-producto">{item.producto.Nombre}</strong>
-                  <button 
-                    onClick={() => quitarProducto(item.id)} 
-                    className="eliminar-item-btn"
-                    title="Eliminar producto del carrito"
-                  >
-                    X
-                  </button>
-                </div>
-
-                <div className="cantidad-controls" style={{ marginBottom: '12px' }}>
-                  <button onClick={() => quitarUnidad(item.producto.ID_Producto)}>
-                    -
-                  </button>
-                  <span>{item.cantidad}</span>
-                  <button onClick={() => agregarProducto(item.producto.ID_Producto)}>
-                    +
-                  </button>
-                </div>
-
-                <div className="comentarios-producto">
-                  <strong>Comentarios:</strong>
-                  <ul>
-                    {item.comentarios.map((coment, idx) => (
-                      <li key={idx}>
-                        <input
-                          type="text"
-                          value={comentariosTemp[`${item.id}-${idx}`] ?? coment}
-                          onChange={e => handleComentarioChange(item.id, idx, e.target.value)}
-                          onBlur={() => handleComentarioBlur(item.id, idx)}
-                          className="comentario-input"
-                          placeholder="Agregar comentario..."
-                          style={{ width: '80%' }}
-                        />
-                        <button
-                          className="eliminar-comentario-btn"
-                          style={{ marginLeft: 8 }}
-                          onClick={() => {
-                            const nuevosComentarios = item.comentarios.filter((_, i) => i !== idx);
-                            setCarrito(carrito.map(it =>
-                              it.id === item.id
-                                ? { ...it, comentarios: nuevosComentarios }
-                                : it
-                            ));
-                          }}
-                          title="Eliminar comentario"
-                        >
-                          🗑️
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                  {/* Solo muestra el botón si hay menos comentarios que cantidad */}
-                  {item.comentarios.length < item.cantidad && (
-                    <button
-                      className="anadir-comentario-btn"
-                      onClick={() => añadirComentario(item.id)}
-                      style={{ marginTop: 4 }}
+            {carrito.map((item) => {
+              const inactivo = item.producto.Activo === false;
+              return (
+                <div
+                  key={item.id}
+                  className={`seleccionado-item${inactivo ? ' producto-inactivo' : ''}`}
+                  style={inactivo ? { opacity: 0.5, pointerEvents: 'none' } : {}}
+                >
+                  <div className="item-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <strong className="nombre-producto">{item.producto.Nombre}</strong>
+                    <button 
+                      onClick={() => quitarProducto(item.id)} 
+                      className="eliminar-item-btn"
+                      title="Eliminar producto del carrito"
                     >
-                      + Añadir comentario
+                      X
                     </button>
+                  </div>
+
+                  <div className="cantidad-controls" style={{ marginBottom: '12px' }}>
+                    <button onClick={() => quitarUnidad(item.producto.ID_Producto)}>
+                      -
+                    </button>
+                    <span>{item.cantidad}</span>
+                    <button onClick={() => agregarProducto(item.producto.ID_Producto)}>
+                      +
+                    </button>
+                  </div>
+
+                  <div className="comentarios-producto">
+                    <strong>Comentarios:</strong>
+                    <ul>
+                      {item.comentarios.map((coment, idx) => (
+                        <li key={idx}>
+                          <input
+                            type="text"
+                            value={comentariosTemp[`${item.id}-${idx}`] ?? coment}
+                            onChange={e => handleComentarioChange(item.id, idx, e.target.value)}
+                            onBlur={() => handleComentarioBlur(item.id, idx)}
+                            className="comentario-input"
+                            placeholder="Agregar comentario..."
+                            style={{ width: '80%' }}
+                          />
+                          <button
+                            className="eliminar-comentario-btn"
+                            style={{ marginLeft: 8 }}
+                            onClick={() => {
+                              const nuevosComentarios = item.comentarios.filter((_, i) => i !== idx);
+                              setCarrito(carrito.map(it =>
+                                it.id === item.id
+                                  ? { ...it, comentarios: nuevosComentarios }
+                                  : it
+                              ));
+                            }}
+                            title="Eliminar comentario"
+                          >
+                            🗑️
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    {/* Solo muestra el botón si hay menos comentarios que cantidad */}
+                    {item.comentarios.length < item.cantidad && (
+                      <button
+                        className="anadir-comentario-btn"
+                        onClick={() => añadirComentario(item.id)}
+                        style={{ marginTop: 4 }}
+                      >
+                        + Añadir comentario
+                      </button>
+                    )}
+                  </div>
+                  {inactivo && (
+                    <div style={{ color: 'red', fontWeight: 'bold', marginTop: 8 }}>
+                      Producto inactivo
+                    </div>
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </>
         )}
       </>
@@ -380,6 +394,32 @@ const PaginaPrincipal = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productos]);
 
+  useEffect(() => {
+    const socket = io(backendUrl, { withCredentials: true });
+
+    socket.on('producto-actualizado', (productoActualizado) => {
+      setProductos(prev =>
+        prev.map(prod =>
+          prod.ID_Producto === productoActualizado.ID_Producto
+            ? { ...prod, Activo: productoActualizado.Activo }
+            : prod
+        )
+      );
+      // Actualiza también el estado en el carrito
+      setCarrito(prev =>
+        prev.map(item =>
+          item.producto.ID_Producto === productoActualizado.ID_Producto
+            ? { ...item, producto: { ...item.producto, Activo: productoActualizado.Activo } }
+            : item
+        )
+      );
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [backendUrl]);
+
   if (cargandoUsuario) {
     return <div>Cargando...</div>;
   }
@@ -423,15 +463,20 @@ const PaginaPrincipal = () => {
         <div className="productos">
           {productosFiltrados.map((producto) => {
             const itemEnCarrito = carrito.find(item => item.producto.ID_Producto === producto.ID_Producto);
+            const inactivo = producto.Activo === false; // ← Nuevo: verifica si está inactivo
             return (
-              <div key={producto.ID_Producto} className="producto">
+              <div
+                key={producto.ID_Producto}
+                className={`producto${inactivo ? ' producto-inactivo' : ''}`} // ← Añade clase para sombrear
+                style={inactivo ? { opacity: 0.5, pointerEvents: 'none' } : {}} // ← Sombrea y deshabilita interacción
+              >
                 <p className="nombre-producto">{producto.Nombre}</p>
                 <p>S/ {Number(producto.Precio).toFixed(2)}</p>
                 <div className="cantidad-controls">
                   <button
                     type="button"
                     onClick={() => quitarUnidad(producto.ID_Producto)}
-                    disabled={obtenerCantidad(producto.ID_Producto) === 0}
+                    disabled={obtenerCantidad(producto.ID_Producto) === 0 || inactivo} // ← Deshabilita si inactivo
                   >
                     –
                   </button>
@@ -441,12 +486,13 @@ const PaginaPrincipal = () => {
                   <button
                     type="button"
                     onClick={() => agregarProducto(producto.ID_Producto)}
+                    disabled={inactivo} // ← Deshabilita si inactivo
                   >
                     +
                   </button>
                 </div>
-                {/* Mostrar y editar comentarios si el producto está en el carrito */}
-                {itemEnCarrito && (
+                {/* Mostrar y editar comentarios si el producto está en el carrito y está activo */}
+                {itemEnCarrito && !inactivo && (
                   <div className="comentarios-producto">
                     <strong>Comentarios:</strong>
                     <ul>
@@ -488,6 +534,12 @@ const PaginaPrincipal = () => {
                         + Añadir comentario
                       </button>
                     )}
+                  </div>
+                )}
+                {/* Si está inactivo, muestra mensaje */}
+                {inactivo && (
+                  <div style={{ color: 'red', fontWeight: 'bold', marginTop: 8 }}>
+                    Producto inactivo
                   </div>
                 )}
               </div>

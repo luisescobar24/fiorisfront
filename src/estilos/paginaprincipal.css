@@ -797,3 +797,8 @@ button {
   background: #e74c3c;
   color: #fff;
 }
+
+.producto-inactivo {
+  background: #eee;
+  border: 1px solid #ccc;
+}
