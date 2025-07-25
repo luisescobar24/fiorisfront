@@ -1,0 +1,84 @@
+/* Fondo oscuro semitransparente */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Contenedor del modal */
+.modal-content {
+  width: 300px; /* Modal más angosto */
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #f0f4ff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  position: relative;
+}
+
+/* Título */
+.modal-content h2 {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+/* Inputs */
+.modal-content input {
+  width: 90%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Botones generales dentro del modal */
+.modal-content .btn-modal {
+  padding: 10px 15px;
+  margin: 10px 5px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.modal-content .btn-modal:hover {
+  background-color: #0056b3;
+}
+
+.sign-in-container button {
+  width: 100%;
+  /* Otros estilos */
+}
+
+.contenedor-modal-recuperar .btn-cerrar {
+  all: unset;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  font-size: 1.5rem;
+  color: red;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-cerrar:hover {
+  color: red;
+}
+

@@ -1,0 +1,317 @@
+import '../estilos/paginaprincipal.css';
+import { User } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+type Producto = {
+  ID_Producto: number;
+  Nombre: string;
+  Precio: number;
+  ID_Categoria: number;
+  ID_Area: number;
+};
+
+type Categoria = {
+  ID_Categoria: number;
+  Nombre: string;
+};
+
+type ItemCarrito = {
+  id: number; // ← obligatorio
+  producto: Producto;
+  cantidad: number;
+  comentarios: string[];
+};
+
+type Mesa = { ID_Mesa: number; Numero_mesa: number; salon?: { Nombre: string } };
+type Salon = { ID_Salon: number; Nombre: string };
+
+const PaginaPrincipal = () => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const navigate = useNavigate();
+
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
+  const [usuarioId] = useState<number>(1);
+  const [mesas, setMesas] = useState<Mesa[]>([]);
+  const [salones, setSalones] = useState<Salon[]>([]);
+  const [mesaSeleccionada, setMesaSeleccionada] = useState<number>();
+  const [salonSeleccionado, setSalonSeleccionado] = useState<number>();
+  const [cantidades, setCantidades] = useState<Record<number, number>>({});
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [resProd, resCat] = await Promise.all([
+          axios.get(`${backendUrl}/productos`),
+          axios.get(`${backendUrl}/categorias`)
+        ]);
+        console.log("✅ Productos cargados:", resProd.data);
+        setProductos(resProd.data);
+        setCategorias(resCat.data);
+      } catch (error) {
+        console.error('❌ Error cargando productos o categorías:', error);
+      }
+    };
+    fetchData();
+  }, [backendUrl]);
+
+  useEffect(() => {
+    const fetchLocales = async () => {
+      try {
+        const [resMesas, resSalones] = await Promise.all([
+          axios.get(`${backendUrl}/mesas`),
+          axios.get(`${backendUrl}/salones`)
+        ]);
+        setMesas(resMesas.data);
+        setSalones(resSalones.data);
+        setSalonSeleccionado(resSalones.data[0]?.ID_Salon);
+        setMesaSeleccionada(resMesas.data[0]?.ID_Mesa);
+      } catch (err) {
+        console.error('❌ No se pudo cargar mesas o salones:', err);
+      }
+    };
+    fetchLocales();
+  }, []);
+
+const agregarProducto = useCallback((ID_Producto: number) => {
+  console.log('➕ Agregando producto', ID_Producto);
+  const cantidad = cantidades[ID_Producto] || 1;
+
+  if (cantidad <= 0) {
+    alert('La cantidad debe ser al menos 1');
+    return;
+  }
+
+  setCarrito(prevCarrito => {
+    const itemExistente = prevCarrito.find(item => item.id === ID_Producto);
+    if (itemExistente) {
+      return prevCarrito.map(item =>
+        item.id === ID_Producto
+          ? { ...item, cantidad: item.cantidad + cantidad }
+          : item
+      );
+    } else {
+      const productoBase = productos.find(p => p.ID_Producto === ID_Producto);
+      if (!productoBase) return prevCarrito;
+
+      const nuevoItem: ItemCarrito = {
+        id: productoBase.ID_Producto,
+        producto: productoBase,
+        cantidad: cantidad,
+        comentarios: ['']
+      };
+
+      return [...prevCarrito, nuevoItem];
+    }
+  });
+
+  setCantidades(prev => ({ ...prev, [ID_Producto]: 1 }));
+}, [cantidades, productos]);
+
+  const quitarUnidad = (ID_Producto: number) => {
+    console.log('➖ Quitando unidad', ID_Producto);
+    const existente = carrito.find(item => item.producto.ID_Producto === ID_Producto);
+    if (!existente) return;
+
+    if (existente.cantidad > 1) {
+      setCarrito(carrito.map(item =>
+        item.producto.ID_Producto === ID_Producto ? { ...item, cantidad: item.cantidad - 1 } : item
+      ));
+    } else {
+      setCarrito(carrito.filter(item => item.producto.ID_Producto !== ID_Producto));
+    }
+  };
+
+  const actualizarComentario = (id: number, index: number, comentario: string) => {
+    setCarrito(carrito.map(item => {
+      if (item.id === id) {
+        const nuevosComentarios = [...item.comentarios];
+        nuevosComentarios[index] = comentario;
+        return { ...item, comentarios: nuevosComentarios };
+      }
+      return item;
+    }));
+  };
+
+  const añadirComentario = (id: number) => {
+    setCarrito(carrito.map(item => {
+      if (item.id === id) {
+        return { ...item, comentarios: [...item.comentarios, ''] };
+      }
+      return item;
+    }));
+  };
+
+  const quitarProducto = (id: number) => {
+    setCarrito(carrito.filter(item => item.id !== id));
+  };
+
+  const confirmarPedido = async () => {
+    try {
+      await axios.post(`${backendUrl}/pedidos`, {
+        Fecha_hora: new Date().toISOString(),
+        ID_Estado: 1,
+        ID_Usuario: usuarioId,
+        ID_Mesa: mesaSeleccionada,
+        detalles: carrito.map(item => ({
+          Cantidad: item.cantidad,
+          Comentario: item.comentarios.join('; '),
+          ID_Estado: 1,
+          ID_Producto: item.producto.ID_Producto
+        }))
+      });
+
+      alert('✅ Pedido enviado con éxito');
+      setCarrito([]);
+    } catch (error) {
+      console.error('❌ Error al enviar pedido:', error);
+      alert('Error al enviar pedido');
+    }
+  };
+
+  const cancelarPedido = () => {
+    setCarrito([]);
+  };
+
+  const obtenerCantidad = (ID_Producto: number) => {
+    const encontrado = carrito.find(item => item.producto.ID_Producto === ID_Producto);
+    return encontrado ? encontrado.cantidad : 0;
+  };
+
+  return (
+    <div className="pagina-container">
+      <header className="header">
+        <div className="barra-busqueda">
+          <input type="text" placeholder="Buscar productos..." />
+        </div>
+        <button className="icono-usuario" onClick={() => navigate('/perfil')}>
+          <User  size={28} />
+        </button>
+      </header>
+
+      <div className="categorias-carrusel">
+        {categorias.map((cat) => (
+          <div key={cat.ID_Categoria} className="categoria-item">
+            {cat.Nombre}
+          </div>
+        ))}
+      </div>
+
+      <div className="contenido">
+        <div className="productos">
+          {productos.map((producto) => (
+            <div key={producto.ID_Producto} className="producto">
+              <p className="nombre-producto">{producto.Nombre}</p>
+              <p>S/ {Number(producto.Precio).toFixed(2)}</p>
+              <div className="cantidad-controls">
+                <button
+                  type="button"
+                  onClick={() => quitarUnidad(producto.ID_Producto)}
+                >
+                  –
+                </button>
+                <span style={{ margin: '0 8px' }}>
+                  {obtenerCantidad(producto.ID_Producto)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => agregarProducto(producto.ID_Producto)}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="panel-derecho">
+          <h3>Carrito</h3>
+          <ul>
+            {carrito.map((item) => (
+              <li key={item.id} className="seleccionado-item">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <strong>{item.producto.Nombre}</strong>
+                  <button onClick={() => quitarProducto(item.id)} style={{ color: 'red' }}>
+                    Eliminar
+                  </button>
+                </div>
+
+                <div className="cantidad-controls" style={{ marginTop: '4px', marginBottom: '8px' }}>
+                  <button
+                    onClick={() => quitarUnidad(item.producto.ID_Producto)}
+                  >
+                    -
+                  </button>
+                  <span style={{ margin: '0 8px' }}>{item.cantidad}</span>
+                  <button
+                    onClick={() => agregarProducto(item.producto.ID_Producto)}
+                  >
+                    +
+                  </button>
+                </div>
+
+                {item.comentarios.map((coment, index) => (
+                  <div key={index} className="comentario-item">
+                    <label>
+                      Comentario {index + 1}:
+                      <input
+                        type="text"
+                        value={coment}
+                        onChange={(e) => actualizarComentario(item.id, index, e.target.value)}
+                        className="comentario-input"
+                      />
+                    </label>
+                  </div>
+                ))}
+
+                <button onClick={() => añadirComentario(item.id)} style={{ marginTop: '6px' }}>
+                  + Añadir comentario
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <div className="seleccion">
+            <label>Salón:</label>
+            <select
+              value={salonSeleccionado}
+              onChange={(e) => setSalonSeleccionado(Number(e.target.value))}
+            >
+              {salones.map((salon) => (
+                <option key={salon.ID_Salon} value={salon.ID_Salon}>
+                  {salon.Nombre}
+                </option>
+              ))}
+            </select>
+
+            <label>Mesa:</label>
+            <select
+              value={mesaSeleccionada}
+              onChange={(e) => setMesaSeleccionada(Number(e.target.value))}
+            >
+              {mesas
+                .filter((mesa) =>
+                  mesa.salon?.Nombre === salones.find(s => s.ID_Salon === salonSeleccionado)?.Nombre
+                )
+                .map((mesa) => (
+                  <option key={mesa.ID_Mesa} value={mesa.ID_Mesa}>
+                    Mesa {mesa.Numero_mesa}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="botones-pedido">
+            <button className="confirmar" onClick={confirmarPedido}>Confirmar Pedido</button>
+            <button className="cancelar" onClick={cancelarPedido}>Cancelar Pedido</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PaginaPrincipal;

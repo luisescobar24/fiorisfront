@@ -1,0 +1,307 @@
+.productos-container {
+  padding: 2rem;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9fafb;
+}
+
+.productos-container h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #2563eb;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.btn-agregar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #2563eb;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, box-shadow 0.2s;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+}
+
+.btn-agregar:hover {
+  background-color: #1e40af;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.13);
+}
+
+.productos-barra-busqueda {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  margin-bottom: 1em;
+  background: #f3f4f6;
+  padding: 1em;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.input-busqueda {
+  flex: 1;
+  padding: 0.6em 1em;
+  border: 1px solid #bdbdbd;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #333;
+  background: #fff;
+  transition: border 0.2s;
+}
+
+.input-busqueda:focus {
+  border: 1.5px solid #2563eb;
+  background: #f9fafb;
+}
+
+.productos-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.productos-tabla th,
+.productos-tabla td {
+  padding: 1rem;
+  text-align: left;
+}
+
+.productos-tabla thead {
+  background-color: #e3f2fd;
+  color: #2563eb;
+  font-size: 1rem;
+}
+
+.productos-tabla tbody tr {
+  border-top: 1px solid #e5e7eb;
+  transition: background-color 0.2s;
+}
+
+.productos-tabla tbody tr:hover {
+  background-color: #f3f4f6;
+}
+
+.btn-editar,
+.btn-eliminar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 1.1rem;
+  transition: color 0.3s, transform 0.2s;
+}
+
+.btn-editar {
+  color: #3b82f6;
+}
+
+.btn-editar:hover {
+  color: #2563eb;
+  transform: scale(1.1);
+}
+
+.btn-eliminar {
+  color: #ef4444;
+  margin-left: 0.5rem;
+}
+
+.btn-eliminar:hover {
+  color: #b91c1c;
+  transform: scale(1.1);
+}
+
+/* Modal mejorado */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(30, 41, 59, 0.35);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-agregar-producto {
+  background: #fff;
+  padding: 2em 2em 1em 2em;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(30,41,59,0.18);
+  min-width: 320px;
+  max-width: 95vw;
+  width: 400px;
+  position: relative;
+}
+
+.modal-agregar-producto h3 {
+  margin-top: 0;
+  margin-bottom: 1.2em;
+  color: #2563eb;
+  font-size: 1.3em;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 1em;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.5em;
+  color: #1e293b;
+  font-size: 1.08em;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.7em 1em;
+  border: 1.5px solid #bdbdbd;
+  border-radius: 6px;
+  font-size: 1.08em;
+  background: #f5f5f5;
+  transition: border 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  /* Asegura altura uniforme */
+  min-height: 44px;
+  appearance: none;
+}
+
+.form-group select {
+  /* Para que el select se vea igual que el input */
+  height: 44px;
+  line-height: 1.08em;
+  padding-right: 2em;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border: 2px solid #2563eb;
+  background: #fff;
+}
+
+.modal-input {
+  padding: 0.7em 1em;
+  border: 1.5px solid #bdbdbd;
+  border-radius: 6px;
+  font-size: 1.08em;
+  background: #f5f5f5;
+  transition: border 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  appearance: none;
+}
+
+.modal-input:focus {
+  border: 2px solid #2563eb;
+  background: #fff;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1em;
+  margin-top: 1.5em;
+}
+
+.btn-agregar-modal {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 0.6em 1.3em;
+  border-radius: 6px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-agregar-modal:hover {
+  background: #1e40af;
+}
+
+.btn-cancelar-modal {
+  background: #bdbdbd;
+  color: #333;
+  border: none;
+  padding: 0.6em 1.3em;
+  border-radius: 6px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancelar-modal:hover {
+  background: #9ca3af;
+}
+
+/* Fuerza todos los inputs del modal a tener el mismo tamaño */
+.modal-agregar-producto input[type="text"],
+.modal-agregar-producto input[type="number"],
+.modal-agregar-producto select {
+  padding: 0.7em 1em;
+  border: 1.5px solid #bdbdbd;
+  border-radius: 6px;
+  font-size: 1.08em;
+  background: #f5f5f5;
+  transition: border 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  appearance: none;
+}
+
+.modal-agregar-producto input:focus,
+.modal-agregar-producto select:focus {
+  border: 2px solid #2563eb;
+  background: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .productos-tabla thead {
+    display: none;
+  }
+
+  .productos-tabla tr {
+    display: block;
+    margin-bottom: 1rem;
+    background-color: white;
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  .productos-tabla td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .productos-tabla td:last-child {
+    border-bottom: none;
+  }
+
+  .modal-agregar-producto {
+    padding: 1em;
+    width: 95vw;
+  }
+}

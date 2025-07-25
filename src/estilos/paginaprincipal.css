@@ -1,0 +1,799 @@
+/* Reset básico */
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* Contenedor principal */
+.pagina-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100vw;
+}
+
+/* Header con ícono y barra de búsqueda */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #1a1d23;
+  color: white;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.barra-busqueda {
+  flex: 1;
+  max-width: 400px;
+}
+
+.barra-busqueda input {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 24px;
+  border: none;
+  font-size: 16px;
+  background-color: rgba(255,255,255,0.1);
+  color: white;
+  outline: none;
+  transition: background-color 0.2s;
+}
+
+.barra-busqueda input::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+
+
+/* Botón de ícono usuario */
+.icono-usuario {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  cursor: pointer;
+  color: white;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.icono-usuario:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* Carrusel de categorías */
+.categorias-carrusel {
+  display: flex;
+  overflow-x: auto;
+  padding: 6px 10px;
+  background-color: white;
+  gap: 6px;
+  border-bottom: 1px solid #e9ecef;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: sticky;
+  top: 56px; /* Alto del header, ajusta si tu header es diferente */
+  z-index: 10;
+  background: #fff;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.categorias-carrusel::-webkit-scrollbar {
+  display: none;
+}
+
+.categoria-item {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  padding: 8px 16px;
+  border-radius: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.categoria-item:hover {
+  background-color: #e9ecef;
+}
+
+.categoria-item.activa {
+  background-color: #007bff;
+  color: white;
+  border-color: #0056b3;
+}
+
+/* Contenedor de contenido */
+.contenido {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  /* El alto debe considerar el header y el carrusel */
+  height: calc(100vh - 56px - 48px); /* 56px header + 48px carrusel, ajusta si tu carrusel/header es diferente */
+}
+
+/* Sección de productos */
+.productos {
+  flex: 1 1 0;
+  height: 100%;
+  min-height: 0;
+  max-height: calc(100vh - 56px - 48px); /* Ajusta según el alto de tu header y carrusel */
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  align-content: start;
+}
+
+.producto {
+  background: white;
+  padding: 10px;
+  border: none;
+  border-radius: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.producto:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.nombre-producto {
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.producto p:last-of-type {
+  color: #28a745;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 4px 0;
+}
+
+/* Controles de cantidad */
+.cantidad-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.cantidad-controls button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 50%;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cantidad-controls button:active {
+  transform: scale(0.95);
+  background-color: #0056b3;
+}
+
+.cantidad-controls span {
+  min-width: 30px;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Panel derecho - Carrito */
+.panel-derecho {
+  width: 280px; /* Más estrecho */
+  min-width: 220px;
+  max-width: 320px;
+  background-color: white;
+  border-left: 1px solid #dee2e6;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  max-height: calc(100vh - 56px); /* Ajusta según el alto de tu header */
+  position: sticky;
+  top: 56px; /* Igual que el header */
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Siempre visible en móvil */
+@media (max-width: 768px) {
+  .panel-derecho {
+    display: none !important; /* Oculta el panel en móvil */
+    position: fixed;
+    right: 0;
+    top: 56px;
+    width: 90vw;
+    max-width: 350px;
+    height: calc(100vh - 56px);
+    z-index: 3000;
+    box-shadow: -2px 0 12px rgba(0,0,0,0.12);
+    transition: right 0.3s;
+  }
+  .contenido {
+    margin-right: 0; /* No deja espacio para el carrito en móvil */
+  }
+  .carrito-flotante {
+    display: block;
+  }
+}
+
+/* Limita el alto de los items y activa scroll */
+.carrito-contenido {
+  flex: 1;
+  max-height: 350px; /* Ajusta la altura según tu diseño */
+  overflow-y: auto;
+  padding-right: 8px; /* Opcional: para evitar que el scroll tape contenido */
+}
+
+/* Reduce paddings y gaps en productos */
+.productos {
+  padding: 10px;
+  gap: 10px;
+}
+
+/* Reduce paddings en producto */
+.producto {
+  padding: 10px;
+  gap: 6px;
+}
+
+/* Reduce paddings en header y carrusel */
+.header {
+  padding: 8px 12px;
+  gap: 8px;
+}
+.categorias-carrusel {
+  padding: 6px 10px;
+  gap: 6px;
+}
+
+/* Reduce paddings en botones de pedido */
+.botones-pedido {
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+/* Reduce paddings en selección */
+.seleccion {
+  padding: 8px 10px;
+}
+
+/* Reduce paddings en panel-header */
+.panel-header {
+  padding: 10px 10px 0;
+}
+
+/* Reduce paddings en comentarios */
+.comentarios-producto {
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+/* Reduce tamaño de botones cantidad */
+.cantidad-controls button {
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+}
+
+/* Evita que los items se alarguen demasiado */
+.seleccionado-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 8px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 15px;
+  color: #212529;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  word-break: break-word;
+}
+
+.seleccionado-item:last-child {
+  margin-bottom: 0;
+}
+
+.seleccionado-item .nombre-producto {
+  font-weight: 600;
+  color: #007bff;
+  font-size: 15px;
+  margin-bottom: 2px;
+  text-align: left;
+  width: 100%;
+}
+
+.seleccionado-item .cantidad-controls {
+  margin: 0;
+  gap: 4px;
+}
+
+.seleccionado-item .precio-producto {
+  font-weight: 700;
+  color: #28a745;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+/* Comentarios */
+.comentario-item {
+  margin-bottom: 8px;
+}
+
+.comentario-item label {
+  display: block;
+  font-size: 12px;
+  color: #6c757d;
+  margin-bottom: 4px;
+}
+
+.comentario-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.anadir-comentario-btn {
+  background: none;
+  border: 1px dashed #6c757d;
+  color: #6c757d;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-top: 8px;
+  transition: all 0.2s;
+}
+
+.anadir-comentario-btn:hover {
+  border-color: #007bff;
+  color: #007bff;
+}
+
+/* Selección de mesa y salón */
+.seleccion {
+  padding: 8px 10px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  flex-shrink: 0; /* No se reduce */
+}
+
+.seleccion label {
+  display: block;
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.seleccion select {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  margin-bottom: 12px;
+  font-size: 14px;
+  background: white;
+}
+
+/* Botones de pedido */
+.botones-pedido {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px;
+  background: white;
+  border-top: 1px solid #e9ecef;
+  flex-shrink: 0; /* No se reduce */
+}
+
+.confirmar,
+.cancelar {
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirmar {
+  background-color: #28a745;
+  color: white;
+}
+
+.confirmar:hover {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+.confirmar:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancelar {
+  background-color: #dc3545;
+  color: white;
+}
+
+.cancelar:hover {
+  background-color: #c82333;
+  transform: translateY(-1px);
+}
+
+/* Carrito flotante para móvil */
+.carrito-flotante {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999; /* Muy alto para que nunca quede detrás */
+  display: block;
+  will-change: transform;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+.carrito-toggle {
+  display: none;
+}
+
+.carrito-overlay {
+  display: none;
+}
+
+/* Responsive - Tablet */
+@media (max-width: 1024px) {
+  .panel-derecho {
+    width: 300px;
+  }
+  
+  .productos {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+}
+
+/* Responsive - Móvil */
+@media (max-width: 768px) {
+  .header {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  
+  .barra-busqueda input {
+    font-size: 16px; /* Evita zoom en iOS */
+  }
+
+  .categorias-carrusel {
+    padding: 12px 16px;
+  }
+
+  .contenido {
+    flex-direction: column;
+  }
+
+  .productos {
+    padding: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .producto {
+    padding: 12px;
+  }
+
+  /* Ocultar panel derecho en móvil */
+  .panel-derecho {
+    display: none;
+  }
+
+  /* Mostrar carrito flotante en móvil */
+  .carrito-flotante {
+    display: block;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 3000; /* Asegura que esté por encima de todo */
+    will-change: transform;
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+
+  .carrito-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 16px rgba(0,123,255,0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .carrito-toggle:hover {
+    transform: scale(1.1);
+  }
+
+  .carrito-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  /* Modal del carrito */
+  .carrito-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .carrito-overlay.activo {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .carrito-modal {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    max-width: 100vw;
+    max-height: 100vh;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 3000;
+  }
+
+  .modal-header,
+  .modal-footer {
+    flex-shrink: 0;
+    padding: 10px 12px;
+    background: white;
+    z-index: 2;
+  }
+
+  .modal-contenido {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 0 2px;
+    background: #fff;
+    z-index: 1;
+    max-height: 48vh; /* Limita el alto del listado, puedes ajustar este valor */
+  }
+}
+
+/* Mejoras para móvil */
+@media (max-width: 768px) {
+  .carrito-modal {
+    display: flex;
+    flex-direction: column;
+    height: 96vh; /* Ajusta según tu preferencia */
+    max-height: 96vh;
+    width: 100vw;
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .modal-header,
+  .modal-footer {
+    flex-shrink: 0;
+    background: white;
+    z-index: 2;
+  }
+
+  .modal-contenido {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding: 0 2px;
+    background: #fff;
+    z-index: 1;
+    max-height: 54vh; /* Limita el alto del listado, puedes ajustar este valor */
+  }
+}
+
+/* Para pantallas muy pequeñas */
+@media (max-width: 480px) {
+  .carrito-modal {
+    max-height: 96vh;
+    border-radius: 0;
+  }
+  .modal-header,
+  .modal-footer {
+    padding: 8px 6px;
+  }
+}
+
+/* Utilidades */
+button {
+  touch-action: manipulation;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.comentarios-producto {
+  margin-top: 6px;
+  background: #f1f3f4;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #495057;
+  text-align: left;
+}
+
+.comentarios-producto strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #007bff;
+  font-weight: 600;
+}
+
+.comentarios-producto ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.comentarios-producto li {
+  margin-bottom: 2px;
+  word-break: break-word;
+}
+
+.cerrar-modal {
+  background: transparent;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  position: relative;
+  right: 0;
+  padding: 4px 4px;
+  top: 0;
+}
+
+.cerrar-modal:hover {
+  background: #f1f3f4;
+  color: #d32f2f;
+  touch-action: manipulation;
+}
+
+@media (max-width: 768px) {
+  .botones-pedido {
+    box-sizing: border-box;
+    max-height: 120px; /* Ajusta según lo que necesites */
+    overflow-y: auto;
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    text-align: left;
+  }
+}
+
+.body-no-scroll {
+  overflow: hidden !important;
+  height: 100vh !important;
+  position: fixed !important;
+  width: 100vw;
+}
+
+.eliminar-comentario-btn {
+  background: transparent;
+  border: none;
+  color: #e74c3c;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: color 0.2s;
+  vertical-align: middle;
+  padding: 2px 6px;
+}
+
+.eliminar-comentario-btn:hover {
+  color: #c0392b;
+  background: #ffeaea;
+  border-radius: 4px;
+}
+
+.eliminar-item-btn {
+  background: #ffeaea;
+  border: none;
+  color: #e74c3c;
+  font-weight: bold;
+  font-size: 1em;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-left: 8px;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.eliminar-item-btn:hover {
+  background: #e74c3c;
+  color: #fff;
+}

@@ -1,0 +1,123 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body, html {
+  height: 100%;
+  width: 100%;
+}
+
+.perfil-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+/* SIDEBAR */
+.perfil-sidebar {
+  width: 250px;
+  min-width: 180px;
+  background-color: #2c3e50;
+  color: white;
+  padding: 20px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  border-right: 1px solid #ccc;
+  box-sizing: border-box;
+  transition: width 0.3s;
+}
+
+.perfil-sidebar button {
+  padding: 10px 15px;
+  background-color: #34495e;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 1em;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.perfil-sidebar button:hover {
+  background-color: #1abc9c;
+}
+
+.volver-principal.destacado {
+  background-color: #007bff;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: none;
+  padding: 10px 18px;
+  font-size: 1.1em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* CONTENIDO */
+.perfil-contenido {
+  flex-grow: 1;
+  padding: 40px 24px;
+  background-color: #fff;
+  overflow-y: auto;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .perfil-sidebar {
+    width: 180px;
+    padding: 12px 5px;
+    font-size: 0.95em;
+  }
+  .perfil-contenido {
+    padding: 24px 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .perfil-container {
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+  }
+  .perfil-sidebar {
+    flex-direction: row;
+    width: 100vw;
+    min-width: unset;
+    padding: 8px 2px;
+    gap: 8px;
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+    overflow-x: auto;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .perfil-sidebar button {
+    font-size: 0.95em;
+    padding: 8px 10px;
+    min-width: 120px;
+    margin: 0 2px;
+    white-space: nowrap;
+  }
+  .volver-principal.destacado {
+    font-size: 1em;
+    padding: 8px 12px;
+    margin-bottom: 0;
+  }
+  .perfil-contenido {
+    padding: 12px 4px;
+    min-height: 0;
+    height: 100%;
+  }
+}

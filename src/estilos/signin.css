@@ -1,0 +1,142 @@
+/* Reset y estilos base */
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #e2e2e2, #c9d6ff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Contenedor principal del formulario */
+.sign-in-container {
+  background-color: #fff;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+#root .sign-in-container {
+  width: 25% !important;
+  min-width: 300px !important;
+  max-width: 400px !important;
+  margin: 60px auto !important;
+  padding: 32px 24px !important;
+  background: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+/* Título */
+.sign-in-container h1 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+/* Grupo de inputs con etiquetas */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.input-group label {
+  margin-bottom: 0.3rem;
+  color: #333;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Inputs */
+.sign-in-container input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  border: 1px solid #ccc;
+  border-radius: 0.9rem;
+  font-size: 1rem;
+}
+
+/* Botón principal */
+.sign-in-container button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #4a90e2;
+  border: none;
+  border-radius: 0.5rem;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.sign-in-container button:hover {
+  background-color: #357ab8;
+}
+
+/* Texto adicional */
+.sign-in-container p {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+/* Botones de texto */
+.sign-in-container p button {
+  background: none;
+  border: none;
+  color: #4a90e2;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0;
+}
+
+.sign-in-container p button:hover {
+  color: #2c5ea8;
+}
+
+/* 📱 Responsividad para celulares */
+@media screen and (max-width: 480px) {
+  .sign-in-container {
+    padding: 1.5rem;
+    margin: 1rem;
+    border-radius: 0.7rem;
+    width: 90vw;
+  }
+
+  .sign-in-container h1 {
+    font-size: 1.3rem;
+  }
+
+  .sign-in-container input {
+    font-size: 0.95rem;
+    padding: 0.65rem 0.9rem;
+  }
+
+  .sign-in-container button {
+    font-size: 0.95rem;
+    padding: 0.65rem;
+  }
+
+  .sign-in-container p,
+  .sign-in-container p button {
+    font-size: 0.9rem;
+  }
+}

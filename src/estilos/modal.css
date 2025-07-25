@@ -1,0 +1,73 @@
+.perfil-container {
+  width: 100vw;
+  height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9f9;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.perfil-header {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.perfil-header button {
+  padding: 0.8rem 1.2rem;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.perfil-header button:hover {
+  background-color: #0056b3;
+}
+
+.perfil-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.perfil-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.5rem;
+}
+
+.perfil-field span {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.perfil-field .edit-icon {
+  cursor: pointer;
+  color: #666;
+  transition: color 0.3s;
+}
+
+.perfil-field .edit-icon:hover {
+  color: #000;
+}
+
+.modal-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #007bff;
+  text-decoration: underline;
+  font-size: 1rem;
+}

@@ -1,0 +1,66 @@
+.lista-usuarios-container {
+  padding: 24px 16px;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.lista-usuarios-titulo {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 18px;
+  color: #007bff;
+}
+
+.usuarios-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.usuarios-table th,
+.usuarios-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 15px;
+}
+
+.usuarios-table th {
+  background: #f1f3f4;
+  color: #495057;
+  font-weight: 600;
+}
+
+.usuarios-table tr:last-child td {
+  border-bottom: none;
+}
+
+.usuario-accion-btn {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+  margin-right: 6px;
+}
+
+.usuario-accion-btn:hover {
+  background: #0056b3;
+}
+
+@media (max-width: 600px) {
+  .lista-usuarios-container {
+    padding: 12px 4px;
+  }
+  .usuarios-table th,
+  .usuarios-table td {
+    padding: 8px 6px;
+    font-size: 13px;
+  }
+}
