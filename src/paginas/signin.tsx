@@ -42,7 +42,7 @@ export default function SignIn() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ correo, contrasena: password }),
-        credentials: 'include'
+        credentials: 'include' // ← Esto es lo importante
       });
 
       let data;
@@ -57,11 +57,25 @@ export default function SignIn() {
         return;
       }
 
+      // Guarda el token en localStorage si existe
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+
       // Verifica si el usuario está activo
       if (!data.activo) {
         alert('Tu cuenta no está activa. Por favor, verifica tu correo o contacta al administrador.');
         return;
       }
+
+      // Ejemplo de petición protegida usando fetch
+      fetch(`${backendUrl}/usuario`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
       navigate('/paginaprincipal');
     } catch (error) {
