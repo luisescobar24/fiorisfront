@@ -1,5 +1,5 @@
 // src/componentes/Perfil.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // ← Agrega esta línea
 import Configuracion from '../paginas/configuracion';
 import Productos from '../paginas/productos';
@@ -16,12 +16,56 @@ const Perfil: React.FC = () => {
   const [vistaActual, setVistaActual] = useState<
     'configuracion' | 'productos' | 'estadisticas' | 'usuarios' | 'salones' | 'mesas' | 'categorias' | 'areas' | 'pagina86'
   >('configuracion');
+  const [usuario, setUsuario] = useState<any>(null); // Nuevo estado para el usuario
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUsuario = async () => {
+      try {
+        // 1. Intenta con cookies
+        const resCookie = await fetch(`${import.meta.env.VITE_BACKEND_URL}/usuario`, {
+          credentials: 'include',
+        });
+        if (resCookie.ok) {
+          const data = await resCookie.json();
+          setUsuario(data);
+          localStorage.setItem('usuario', JSON.stringify(data)); // Opcional: guarda en localStorage
+          return;
+        }
+      } catch (e) {
+        // Ignora error, intenta con localStorage
+      }
+
+      // 2. Si falla, intenta con localStorage
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const resToken = await fetch(`${import.meta.env.VITE_BACKEND_URL}/usuario`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (resToken.ok) {
+            const data = await resToken.json();
+            setUsuario(data);
+            localStorage.setItem('usuario', JSON.stringify(data));
+            return;
+          }
+        } catch (e) {
+          // Si falla, usuario sigue null
+        }
+      }
+      setUsuario(null);
+    };
+
+    fetchUsuario();
+  }, []);
 
   const botones = [
     { nombre: 'Configuración', valor: 'configuracion' },
     { nombre: 'Gestión de Productos (86)', valor: 'pagina86' },
-    // Puedes agregar más botones aquí si lo deseas
+    // Ejemplo: solo admin puede ver usuarios y estadísticas
+    { nombre: 'Usuarios', valor: 'usuarios', admin: true },
+    { nombre: 'Estadísticas', valor: 'estadisticas', admin: true },
+    // ...otros botones...
   ];
 
   const renderContenido = () => {
@@ -79,17 +123,20 @@ const Perfil: React.FC = () => {
         >
           🧑‍🍳 Ver Mozo
         </button>
-        {botones.map((btn) => (
-          <button
-            key={btn.valor}
-            onClick={() => setVistaActual(btn.valor as typeof vistaActual)}
-            className={vistaActual === btn.valor ? 'activo' : ''}
-          >
-            {btn.nombre}
-          </button>
-        ))}
+        {botones.map((btn) => {
+          // Si el botón es solo para admin y el usuario no es admin, no lo muestres
+          if (btn.admin && usuario?.rol?.Nombre !== 'ADMIN') return null;
+          return (
+            <button
+              key={btn.valor}
+              onClick={() => setVistaActual(btn.valor as typeof vistaActual)}
+              className={vistaActual === btn.valor ? 'activo' : ''}
+            >
+              {btn.nombre}
+            </button>
+          );
+        })}
       </aside>
-
       <main className="perfil-contenido">
         {renderContenido()}
       </main>
