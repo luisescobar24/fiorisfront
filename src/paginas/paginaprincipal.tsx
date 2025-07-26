@@ -203,6 +203,7 @@ const PaginaPrincipal = () => {
   const confirmarPedido = async () => {
     if (carrito.length === 0) return;
     try {
+      // 1. Intenta con cookie
       await axios.post(`${backendUrl}/pedidos`, {
         Fecha_hora: new Date().toISOString(),
         ID_Estado: 1,
@@ -220,8 +221,37 @@ const PaginaPrincipal = () => {
       alert('✅ Pedido enviado con éxito');
       setCarrito([]);
       setCarritoAbierto(false);
-      sessionStorage.removeItem('carrito'); // ← Limpia el carrito guardado
+      sessionStorage.removeItem('carrito');
     } catch (error) {
+      // 2. Si falla, intenta con token en localStorage
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          await axios.post(`${backendUrl}/pedidos`, {
+            Fecha_hora: new Date().toISOString(),
+            ID_Estado: 1,
+            ID_Mesa: mesaSeleccionada,
+            detalles: carrito.flatMap(item =>
+              Array.from({ length: item.cantidad }).map((_, idx) => ({
+                Cantidad: 1,
+                Comentario: (item.comentarios[idx] ?? '').trim(),
+                ID_Estado: 1,
+                ID_Producto: item.producto.ID_Producto
+              }))
+            )
+          }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          alert('✅ Pedido enviado con éxito');
+          setCarrito([]);
+          setCarritoAbierto(false);
+          sessionStorage.removeItem('carrito');
+          return;
+        } catch (err) {
+          // Si también falla, muestra error
+        }
+      }
       console.error('❌ Error al enviar pedido:', error);
       alert('Error al enviar pedido');
     }
