@@ -45,7 +45,12 @@ export default function SignIn() {
         credentials: 'include'
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
 
       if (!response.ok) {
         alert(data.mensaje || 'Error al iniciar sesión');

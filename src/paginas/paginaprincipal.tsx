@@ -78,7 +78,7 @@ const PaginaPrincipal = () => {
       }
     };
     fetchLocales();
-  }, []);
+  }, [backendUrl]);
 
   useEffect(() => {
     const fetchUsuario = async () => {
