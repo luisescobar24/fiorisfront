@@ -16,15 +16,33 @@ const Configuracion: React.FC = () => {
   const navigate = useNavigate(); // ← Nuevo hook
 
   useEffect(() => {
-    axios.get(`${backendUrl}/perfil`, { withCredentials: true })
-      .then(res => setUsuario(res.data))
-      .catch(err => {
-        console.error(err);
+    const fetchUsuario = async () => {
+      try {
+        // 1. Intenta con cookie
+        const res = await axios.get(`${backendUrl}/perfil`, { withCredentials: true });
+        setUsuario(res.data);
+      } catch (error) {
+        // 2. Si falla, intenta con token en localStorage
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const res = await axios.get(`${backendUrl}/perfil`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setUsuario(res.data);
+            return;
+          } catch (err) {
+            // Si también falla, usuario no autenticado
+          }
+        }
         setUsuario(null);
         setError('Error al cargar el usuario. Verifica si estás logueado.');
-      })
-      .finally(() => setCargandoUsuario(false));
-  }, []);
+      } finally {
+        setCargandoUsuario(false);
+      }
+    };
+    fetchUsuario();
+  }, [backendUrl]);
 
   useEffect(() => {
     if (!cargandoUsuario && !usuario) {

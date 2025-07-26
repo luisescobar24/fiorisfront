@@ -16,21 +16,61 @@ const Pagina86: React.FC = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
-    fetch(`${backendUrl}/productos`, {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => setProductos(data))
-      .catch((err) => console.error(err));
+    const fetchProductos = async () => {
+      try {
+        // 1. Intenta con cookie
+        const res = await fetch(`${backendUrl}/productos`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        setProductos(data);
+      } catch {
+        // 2. Si falla, intenta con token en localStorage
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const res = await fetch(`${backendUrl}/productos`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            setProductos(data);
+          } catch (err) {
+            setProductos([]);
+          }
+        } else {
+          setProductos([]);
+        }
+      }
+    };
+    fetchProductos();
   }, [backendUrl]);
 
   const handleToggleActivo = async (id: number, activo: boolean) => {
-    await fetch(`${backendUrl}/productos/${id}/estado`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ activo: !activo }),
-    });
+    try {
+      // 1. Intenta con cookie
+      const res = await fetch(`${backendUrl}/productos/${id}/estado`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ activo: !activo }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      // 2. Si falla, intenta con token en localStorage
+      const token = localStorage.getItem('token');
+      if (token) {
+        await fetch(`${backendUrl}/productos/${id}/estado`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ activo: !activo }),
+        });
+      }
+    }
     setProductos((prev) =>
       prev.map((p) =>
         p.ID_Producto === id ? { ...p, Activo: !activo } : p
