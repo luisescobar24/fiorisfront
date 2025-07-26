@@ -25,6 +25,7 @@ const Configuracion: React.FC = () => {
           });
           setUsuario(res.data);
           setError(null);
+          console.log('Usuario recibido:', res.data); // <-- Agrega esto
         } catch (error) {
           setUsuario(null);
           setError('Error al cargar el usuario. Verifica si estás logueado.');
