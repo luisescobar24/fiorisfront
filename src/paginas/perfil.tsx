@@ -41,7 +41,7 @@ const Perfil: React.FC = () => {
       if (token) {
         try {
           const resToken = await fetch(`${import.meta.env.VITE_BACKEND_URL}/usuario`, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bzearer ${token}` },
           });
           if (resToken.ok) {
             const data = await resToken.json();
@@ -130,8 +130,6 @@ const Perfil: React.FC = () => {
         </button>
         {/* Botones condicionales */}
         {botones.map((btn) => {
-          // Si es admin, muestra todos los botones
-          // Si no es admin, solo muestra configuración y gestión de productos
           if (!esAdmin && btn.admin) return null;
           return (
             <button
