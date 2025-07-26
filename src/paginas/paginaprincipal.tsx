@@ -83,9 +83,23 @@ const PaginaPrincipal = () => {
   useEffect(() => {
     const fetchUsuario = async () => {
       try {
+        // 1. Intenta validar con cookie
         const res = await axios.get(`${backendUrl}/usuario`, { withCredentials: true });
         setUsuario(res.data);
       } catch (error) {
+        // 2. Si falla, intenta con token en localStorage
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            const res = await axios.get(`${backendUrl}/usuario`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setUsuario(res.data);
+            return;
+          } catch (err) {
+            // Si también falla, usuario no autenticado
+          }
+        }
         setUsuario(null);
       } finally {
         setCargandoUsuario(false);
