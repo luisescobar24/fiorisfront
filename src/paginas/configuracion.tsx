@@ -17,29 +17,23 @@ const Configuracion: React.FC = () => {
 
   useEffect(() => {
     const fetchUsuario = async () => {
-      try {
-        // 1. Intenta con cookie
-        const res = await axios.get(`${backendUrl}/perfil`, { withCredentials: true });
-        setUsuario(res.data);
-      } catch (error) {
-        // 2. Si falla, intenta con token en localStorage
-        const token = localStorage.getItem('token');
-        if (token) {
-          try {
-            const res = await axios.get(`${backendUrl}/perfil`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            setUsuario(res.data);
-            return;
-          } catch (err) {
-            // Si también falla, usuario no autenticado
-          }
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const res = await axios.get(`${backendUrl}/perfil`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setUsuario(res.data);
+          setError(null);
+        } catch (error) {
+          setUsuario(null);
+          setError('Error al cargar el usuario. Verifica si estás logueado.');
         }
+      } else {
         setUsuario(null);
-        setError('Error al cargar el usuario. Verifica si estás logueado.');
-      } finally {
-        setCargandoUsuario(false);
+        setError('No hay token en localStorage. Inicia sesión.');
       }
+      setCargandoUsuario(false);
     };
     fetchUsuario();
   }, [backendUrl]);
