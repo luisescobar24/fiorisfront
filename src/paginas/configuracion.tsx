@@ -20,7 +20,7 @@ const Configuracion: React.FC = () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const res = await axios.get(`${backendUrl}/perfil`, {
+          const res = await axios.get(`${backendUrl}/usuario`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUsuario(res.data);
