@@ -13,13 +13,29 @@ const Estadisticas: React.FC = () => {
   useEffect(() => {
     const fetchUsuario = async () => {
       try {
-        const res = await axios.get(`${backendUrl}/usuario`, { withCredentials: true });
-        setUsuario(res.data);
-      } catch (error) {
-        setUsuario(null);
-      } finally {
+        // 1. Intenta con cookies
+        const resCookie = await axios.get(`${backendUrl}/usuario`, { withCredentials: true });
+        setUsuario(resCookie.data);
         setCargandoUsuario(false);
+        return;
+      } catch (error) {
+        // Si falla, intenta con localStorage
       }
+
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const resToken = await axios.get(`${backendUrl}/usuario`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setUsuario(resToken.data);
+        } catch (error) {
+          setUsuario(null);
+        }
+      } else {
+        setUsuario(null);
+      }
+      setCargandoUsuario(false);
     };
     fetchUsuario();
   }, [backendUrl]);

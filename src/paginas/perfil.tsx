@@ -62,11 +62,15 @@ const Perfil: React.FC = () => {
   const botones = [
     { nombre: 'Configuración', valor: 'configuracion' },
     { nombre: 'Gestión de Productos (86)', valor: 'pagina86' },
-    // Ejemplo: solo admin puede ver usuarios y estadísticas
     { nombre: 'Usuarios', valor: 'usuarios', admin: true },
     { nombre: 'Estadísticas', valor: 'estadisticas', admin: true },
-    // ...otros botones...
+    { nombre: 'Salones', valor: 'salones', admin: true },
+    { nombre: 'Mesas', valor: 'mesas', admin: true },
+    { nombre: 'Categorías', valor: 'categorias', admin: true },
+    { nombre: 'Áreas', valor: 'areas', admin: true },
   ];
+
+  const esAdmin = usuario?.rol?.Nombre === 'ADMIN';
 
   const renderContenido = () => {
     switch (vistaActual) {
@@ -96,6 +100,7 @@ const Perfil: React.FC = () => {
   return (
     <div className="perfil-container">
       <aside className="perfil-sidebar">
+        {/* Estos botones los ven todos */}
         <button
           onClick={() => navigate('/paginaprincipal')}
           className="volver-principal destacado"
@@ -123,9 +128,11 @@ const Perfil: React.FC = () => {
         >
           🧑‍🍳 Ver Mozo
         </button>
+        {/* Botones condicionales */}
         {botones.map((btn) => {
-          // Si el botón es solo para admin y el usuario no es admin, no lo muestres
-          if (btn.admin && usuario?.rol?.Nombre !== 'ADMIN') return null;
+          // Si es admin, muestra todos los botones
+          // Si no es admin, solo muestra configuración y gestión de productos
+          if (!esAdmin && btn.admin) return null;
           return (
             <button
               key={btn.valor}

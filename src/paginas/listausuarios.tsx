@@ -22,13 +22,29 @@ const ListaUsuarios: React.FC = () => {
   useEffect(() => {
     const fetchUsuario = async () => {
       try {
+        // 1. Intenta con cookies
         const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/usuario`, { withCredentials: true });
         setUsuario(res.data);
-      } catch (error) {
-        setUsuario(null);
-      } finally {
         setCargandoUsuario(false);
+        return;
+      } catch (error) {
+        // Si falla, intenta con localStorage
       }
+
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const resToken = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/usuario`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setUsuario(resToken.data);
+        } catch (error) {
+          setUsuario(null);
+        }
+      } else {
+        setUsuario(null);
+      }
+      setCargandoUsuario(false);
     };
     fetchUsuario();
   }, []);
