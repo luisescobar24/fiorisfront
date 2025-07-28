@@ -16,7 +16,7 @@ const Configuracion: React.FC = () => {
   const navigate = useNavigate(); // ← Nuevo hook
 
   useEffect(() => {
-    axios.get(`${backendUrl}/perfil`, { withCredentials: true })
+    axios.get(`${backendUrl}/usuario`, { withCredentials: true })
       .then(res => setUsuario(res.data))
       .catch(err => {
         console.error(err);
