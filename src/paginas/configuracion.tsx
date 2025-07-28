@@ -7,7 +7,7 @@ import ModalRecuperar from '../modales/modalrecuperar';
 import '../estilos/configuracion.css';
 
 const Configuracion: React.FC = () => {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl = 'https://fiorisback.onrender.com';
   const [usuario, setUsuario] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [modalCorreo, setModalCorreo] = useState(false);

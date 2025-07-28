@@ -9,7 +9,8 @@ export default function SignIn() {
   const [modalAbierto, setModalAbierto] = useState<'registro' | 'recuperar' | null>(null);
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl =  'https://fiorisback.onrender.com';
+  console.log('URL del backend:', backendUrl);
   const navigate = useNavigate();
 
   // Bloquea el scroll cuando un modal está abierto

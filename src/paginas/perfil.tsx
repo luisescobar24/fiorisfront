@@ -22,8 +22,9 @@ const Perfil: React.FC = () => {
 
   useEffect(() => {
     const fetchUsuario = async () => {
+      const backendUrl = 'https://fiorisback.onrender.com';
       try {
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/usuario`, { withCredentials: true });
+        const res = await axios.get(`${backendUrl}/usuario`, { withCredentials: true });
         setUsuario(res.data);
       } catch (error) {
         setUsuario(null);
