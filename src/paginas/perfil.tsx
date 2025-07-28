@@ -23,7 +23,7 @@ const Perfil: React.FC = () => {
   useEffect(() => {
     const fetchUsuario = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/perfil`, { withCredentials: true });
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/usuario`, { withCredentials: true });
         setUsuario(res.data);
       } catch (error) {
         setUsuario(null);
