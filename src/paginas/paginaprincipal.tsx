@@ -28,7 +28,7 @@ type Mesa = { ID_Mesa: number; Numero_mesa: number; salon?: { Nombre: string } }
 type Salon = { ID_Salon: number; Nombre: string };
 
 const PaginaPrincipal = () => {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl = 'https://fiorisback.onrender.com';
   const navigate = useNavigate();
 
   const [productos, setProductos] = useState<Producto[]>([]);
