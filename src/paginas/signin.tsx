@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ModalRegistro from '../modales/modalregistro';
 import ModalRecuperar from '../modales/modalrecuperar';
 import '../estilos/signin.css';
+import axios from 'axios';
 
 export default function SignIn() {
   const [modalAbierto, setModalAbierto] = useState<'registro' | 'recuperar' | null>(null);
@@ -32,6 +33,19 @@ export default function SignIn() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [modalAbierto]);
 
+  const guardarCookie = async () => {
+    try {
+      const response = await axios.post(
+        `${backendUrl}/guardar-cookie`,
+        { nombre: 'LuisEscobar' },
+        { withCredentials: true }
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error al guardar la cookie:', error);
+    }
+  };
+
   const handleLogin = async () => {
     if (!correo || !password) {
       alert('Por favor, completa todos los campos');
@@ -57,6 +71,8 @@ export default function SignIn() {
         alert('Tu cuenta no está activa. Por favor, verifica tu correo o contacta al administrador.');
         return;
       }
+
+      await guardarCookie(); // Llama a la función para guardar la cookie
 
       navigate('/paginaprincipal');
     } catch (error) {
