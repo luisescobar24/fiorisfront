@@ -13,7 +13,7 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const backendUrl = "https://fiorisback.onrender.com";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     document.body.style.overflow = modalAbierto ? "hidden" : "";
