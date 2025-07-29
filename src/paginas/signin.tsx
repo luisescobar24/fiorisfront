@@ -36,53 +36,46 @@ export default function SignIn() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [modalAbierto]);
 
-  const guardarCookie = async () => {
-    try {
-      const response = await axios.post(
-        `${backendUrl}/guardar-cookie`,
-        { nombre: "LuisEscobar" },
-        { withCredentials: true }
-      );
-      console.log(response.data);
-    } catch (error) {
-      console.error("Error al guardar la cookie:", error);
-    }
-  };
-
   const handleLogin = async () => {
-    if (!correo || !password) {
-      alert("Por favor, completa todos los campos");
+    // Validación básica
+    if (!correo.trim() || !password.trim()) {
+      alert("Por favor, completa todos los campos.");
       return;
     }
+
     try {
-      const response = await fetch(`${backendUrl}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, contrasena: password }),
-        credentials: "include",
-      });
+      const response = await axios.post(
+        `${backendUrl}/login`,
+        {
+          correo,
+          contrasena: password,
+        },
+        {
+          withCredentials: true, // Muy importante para que se guarde la cookie httpOnly
+        }
+      );
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (!response.ok) {
-        alert(data.mensaje || "Error al iniciar sesión");
-        return;
-      }
-
-      // Verifica si el usuario está activo
+      // Validación de cuenta activa
       if (!data.activo) {
         alert(
-          "Tu cuenta no está activa. Por favor, verifica tu correo o contacta al administrador."
+          "Tu cuenta no está activa. Revisa tu correo o contacta al administrador."
         );
         return;
       }
 
-      await guardarCookie(); // Llama a la función para guardar la cookie
-
+      // Login exitoso
       navigate("/paginaprincipal");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error en login:", error);
-      alert("Error al conectar con el servidor. Inténtalo más tarde.");
+
+      // Manejo de errores más detallado
+      let mensaje = "No se pudo iniciar sesión. Verifica tus datos o intenta más tarde.";
+      if (axios.isAxiosError(error) && error.response?.data?.mensaje) {
+        mensaje = error.response.data.mensaje;
+      }
+      alert(mensaje);
     }
   };
 
