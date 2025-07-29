@@ -13,7 +13,7 @@ import PedidosMozo from "./paginas/pedidosmozo";
 Modal.setAppElement("#root");
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename="/fiorisfront">
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<SignIn />} />
         <Route path="/paginaprincipal" element={<PaginaPrincipal />} />
