@@ -1,21 +1,22 @@
-// src/componentes/Perfil.tsx
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // ← Agrega esta línea
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Configuracion from "../paginas/configuracion";
 import Productos from "../paginas/productos";
 import Estadisticas from "./estadisticas";
-import ListaUsuarios from "../paginas/listausuarios"; // Ajusta la ruta si es necesario
-import ListaSalones from "../paginas/listasalones"; // Ajusta la ruta si es necesario
-import ListaMesas from "../paginas/listamesas"; // Ajusta la ruta si es necesario
-import ListaCategorias from "../paginas/listacategorias"; // Ajusta la ruta si es necesario
-import ListaAreas from "../paginas/lista_areas"; // Ajusta la ruta si es necesario
+import ListaUsuarios from "../paginas/listausuarios";
+import ListaSalones from "../paginas/listasalones";
+import ListaMesas from "../paginas/listamesas";
+import ListaCategorias from "../paginas/listacategorias";
+import ListaAreas from "../paginas/lista_areas";
+import Pagina86 from "../paginas/pagina86";
 import "../estilos/perfil.css";
 
 const Perfil: React.FC = () => {
   const [vistaActual, setVistaActual] = useState<
     | "configuracion"
     | "productos"
+    | "pagina86"
     | "estadisticas"
     | "usuarios"
     | "salones"
@@ -28,11 +29,12 @@ const Perfil: React.FC = () => {
     rol: { Nombre: string };
   } | null>(null);
   const [cargandoUsuario, setCargandoUsuario] = useState(true);
-  const navigate = useNavigate(); // ← Agrega esta línea
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsuario = async () => {
-        const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
       try {
         const res = await axios.get(`${backendUrl}/usuario`, {
           withCredentials: true,
@@ -55,7 +57,6 @@ const Perfil: React.FC = () => {
 
   const botones = [{ nombre: "Configuración", valor: "configuracion" }];
 
-  // Solo para admin
   if (usuario?.rol?.Nombre === "ADMIN") {
     botones.push(
       { nombre: "Productos", valor: "productos" },
@@ -64,7 +65,8 @@ const Perfil: React.FC = () => {
       { nombre: "Lista de Mesas", valor: "mesas" },
       { nombre: "Lista de Categorías", valor: "categorias" },
       { nombre: "Lista de Áreas", valor: "areas" },
-      { nombre: "Lista de usuarios", valor: "usuarios" }
+      { nombre: "Lista de usuarios", valor: "usuarios" },
+      { nombre: "Página 86", valor: "pagina86" }
     );
   }
 
@@ -73,7 +75,6 @@ const Perfil: React.FC = () => {
   }
 
   const renderContenido = () => {
-    // Si no es admin, solo puede ver configuración
     if (vistaActual !== "configuracion" && usuario?.rol?.Nombre !== "ADMIN") {
       return <div>No tienes permiso para ver esta sección.</div>;
     }
@@ -94,6 +95,8 @@ const Perfil: React.FC = () => {
         return <ListaCategorias />;
       case "areas":
         return <ListaAreas />;
+      case "pagina86":
+        return <Pagina86 />;
       default:
         return null;
     }
@@ -101,45 +104,64 @@ const Perfil: React.FC = () => {
 
   return (
     <div className="perfil-container">
-      <aside className="perfil-sidebar">
+      <aside className={`perfil-sidebar ${menuAbierto ? "abierto" : ""}`}>
         <button
-          onClick={() => navigate("/paginaprincipal")}
-          className="volver-principal destacado"
+          className="hamburger-btn"
+          onClick={() => setMenuAbierto(!menuAbierto)}
         >
-          🏠 Volver a principal
+          ☰
         </button>
-        <button
-          onClick={() => navigate("/barravisual")}
-          className="ver-barra-btn"
-          style={{ background: "#1976d2", color: "#fff", marginBottom: 10 }}
-        >
-          🍹 Ver Barra
-        </button>
-        <button
-          onClick={() => navigate("/planchavisual")}
-          className="ver-plancha-btn"
-          style={{ background: "#388e3c", color: "#fff", marginBottom: 10 }}
-        >
-          🍳 Ver Plancha
-        </button>
-        <button
-          onClick={() => navigate("/mozovisual")}
-          className="ver-mozo-btn"
-          style={{ background: "#ffb300", color: "#fff", marginBottom: 10 }}
-        >
-          🧑‍🍳 Ver Mozo
-        </button>
-        {botones.map((btn) => (
+        <div className="sidebar-content">
           <button
-            key={btn.valor}
-            onClick={() => setVistaActual(btn.valor as typeof vistaActual)}
-            className={vistaActual === btn.valor ? "activo" : ""}
+            onClick={() => {
+              navigate("/paginaprincipal");
+              setMenuAbierto(false);
+            }}
+            className="volver-principal destacado"
           >
-            {btn.nombre}
+            🏠 Volver a principal
           </button>
-        ))}
+          <button
+            onClick={() => {
+              navigate("/barravisual");
+              setMenuAbierto(false);
+            }}
+            className="ver-barra-btn"
+          >
+            🍹 Ver Barra
+          </button>
+          <button
+            onClick={() => {
+              navigate("/planchavisual");
+              setMenuAbierto(false);
+            }}
+            className="ver-plancha-btn"
+          >
+            🍳 Ver Plancha
+          </button>
+          <button
+            onClick={() => {
+              navigate("/mozovisual");
+              setMenuAbierto(false);
+            }}
+            className="ver-mozo-btn"
+          >
+            🧑‍🍳 Ver Mozo
+          </button>
+          {botones.map((btn) => (
+            <button
+              key={btn.valor}
+              onClick={() => {
+                setVistaActual(btn.valor as typeof vistaActual);
+                setMenuAbierto(false);
+              }}
+              className={vistaActual === btn.valor ? "activo" : ""}
+            >
+              {btn.nombre}
+            </button>
+          ))}
+        </div>
       </aside>
-
       <main className="perfil-contenido">{renderContenido()}</main>
     </div>
   );

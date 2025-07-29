@@ -1,83 +1,104 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { io } from "socket.io-client";
+import "../estilos/pagina86.css";
 
 interface Producto {
-  nombre: string;
-  estado: number;
-  habilitado?: boolean; // true = se puede pedir, false = inhabilitado
+  ID_Producto: number;
+  Nombre: string;
+  Activo: boolean;
 }
 
-interface Mesa {
-  numero: number;
-  productos: Producto[];
-  cliente?: any;
-}
+const socket = io(import.meta.env.VITE_BACKEND_URL, {
+  transports: ["websocket", "polling"],
+});
 
-interface Salon {
-  salon: string;
-  mesas: Mesa[];
-}
+const Pagina86: React.FC = () => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [cargando, setCargando] = useState(true);
 
-interface Props {
-  salones: Salon[];
-}
+  const fetchProductos = async () => {
+    setCargando(true);
+    try {
+      const res = await axios.get(`${backendUrl}/productos`);
+      setProductos(res.data);
+    } catch (err) {
+      setProductos([]);
+    } finally {
+      setCargando(false);
+    }
+  };
 
-const Pagina86: React.FC<Props> = ({ salones }) => {
+  useEffect(() => {
+    const onConnect = () => console.log("Conectado al servidor WebSocket");
+    socket.on("connect", onConnect);
+
+    fetchProductos();
+
+    return () => {
+      socket.off("connect", onConnect);
+    };
+  }, []);
+
+  const toggleProducto = async (id: number, activo: boolean) => {
+    try {
+      await axios.put(
+        `${backendUrl}/productos/${id}/estado`,
+        { activo: !activo },
+        { withCredentials: true }
+      );
+      setProductos((prev) =>
+        prev.map((p) => (p.ID_Producto === id ? { ...p, Activo: !activo } : p))
+      );
+    } catch (err) {
+      alert("No se pudo actualizar el estado del producto");
+    }
+  };
+
+  if (cargando) return <div>Cargando productos...</div>;
+
   return (
-    <div className="mozo-pedidos-scroll">
-      {salones.map((salon) => (
-        <div key={salon.salon} style={{ marginBottom: 32 }}>
-          <h2 className="titulo-salon">{salon.salon}</h2>
-          {salon.mesas.map((mesa) => (
-            <div key={mesa.numero} className="mozo-mesa">
-              <h3>Mesa {mesa.numero}</h3>
-              <ul style={{ listStyle: "none", padding: 0 }}>
-                {mesa.productos.map((prod, idx) => (
-                  <li
-                    key={idx}
-                    className={
-                      prod.habilitado === false
-                        ? "producto-inhabilitado"
-                        : prod.estado === 2
-                        ? "producto-servido"
-                        : ""
-                    }
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: 6,
-                      color:
-                        prod.habilitado === false
-                          ? "#bdbdbd"
-                          : prod.estado === 2
-                          ? "#43e97b"
-                          : "#333",
-                      fontWeight: prod.estado === 2 ? 600 : 400,
-                      opacity: prod.habilitado === false ? 0.5 : 1,
-                      pointerEvents:
-                        prod.habilitado === false ? "none" : "auto",
-                      cursor:
-                        prod.habilitado === false ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {prod.estado === 2 ? (
-                      <span className="mozo-producto-check">✔️</span>
-                    ) : (
-                      <span style={{ width: 20, marginRight: 8 }} />
-                    )}
-                    {prod.nombre}
-                    {prod.habilitado === false && (
-                      <span style={{ color: "red", marginLeft: 8 }}>
-                        (No disponible)
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {/* Aquí irían los botones de cliente si los necesitas */}
-            </div>
+    <div>
+      <h2>Gestión rápida de productos</h2>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left" }}>Producto</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {productos.map((prod) => (
+            <tr key={prod.ID_Producto}>
+              <td>{prod.Nombre}</td>
+              <td>
+                {prod.Activo ? (
+                  <span style={{ color: "green" }}>Habilitado</span>
+                ) : (
+                  <span style={{ color: "red" }}>Deshabilitado</span>
+                )}
+              </td>
+              <td>
+                <button
+                  onClick={() => toggleProducto(prod.ID_Producto, prod.Activo)}
+                  style={{
+                    background: prod.Activo ? "#e53935" : "#43a047",
+                    color: "#fff",
+                    border: "none",
+                    padding: "6px 12px",
+                    borderRadius: 4,
+                    cursor: "pointer",
+                  }}
+                >
+                  {prod.Activo ? "Deshabilitar" : "Habilitar"}
+                </button>
+              </td>
+            </tr>
           ))}
-        </div>
-      ))}
+        </tbody>
+      </table>
     </div>
   );
 };
