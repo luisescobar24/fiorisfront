@@ -1,8 +1,8 @@
-import '../estilos/paginaprincipal.css';
-import { User, ShoppingCart, X } from 'lucide-react';
-import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import "../estilos/paginaprincipal.css";
+import { User, ShoppingCart, X } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 type Producto = {
   ID_Producto: number;
@@ -24,11 +24,15 @@ type ItemCarrito = {
   comentarios: string[];
 };
 
-type Mesa = { ID_Mesa: number; Numero_mesa: number; salon?: { Nombre: string } };
+type Mesa = {
+  ID_Mesa: number;
+  Numero_mesa: number;
+  salon?: { Nombre: string };
+};
 type Salon = { ID_Salon: number; Nombre: string };
 
 const PaginaPrincipal = () => {
-  const backendUrl = 'https://fiorisback.onrender.com';
+  const backendUrl = "https://fiorisback.onrender.com";
   const navigate = useNavigate();
 
   const [productos, setProductos] = useState<Producto[]>([]);
@@ -38,10 +42,15 @@ const PaginaPrincipal = () => {
   const [salones, setSalones] = useState<Salon[]>([]);
   const [mesaSeleccionada, setMesaSeleccionada] = useState<number>();
   const [salonSeleccionado, setSalonSeleccionado] = useState<number>();
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<number | null>(null);
-  const [busqueda, setBusqueda] = useState('');
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<
+    number | null
+  >(null);
+  const [busqueda, setBusqueda] = useState("");
   const [carritoAbierto, setCarritoAbierto] = useState(false);
-  const [usuario, setUsuario] = useState<{ ID_Usuario: number; Nombre: string } | null>(null);
+  const [usuario, setUsuario] = useState<{
+    ID_Usuario: number;
+    Nombre: string;
+  } | null>(null);
   const [cargandoUsuario, setCargandoUsuario] = useState(true);
 
   useEffect(() => {
@@ -49,12 +58,12 @@ const PaginaPrincipal = () => {
       try {
         const [resProd, resCat] = await Promise.all([
           axios.get(`${backendUrl}/productos`),
-          axios.get(`${backendUrl}/categorias`)
+          axios.get(`${backendUrl}/categorias`),
         ]);
         setProductos(resProd.data);
         setCategorias(resCat.data);
       } catch (error) {
-        console.error('❌ Error cargando productos o categorías:', error);
+        console.error("❌ Error cargando productos o categorías:", error);
       }
     };
     fetchData();
@@ -65,14 +74,14 @@ const PaginaPrincipal = () => {
       try {
         const [resMesas, resSalones] = await Promise.all([
           axios.get(`${backendUrl}/mesas`),
-          axios.get(`${backendUrl}/salones`)
+          axios.get(`${backendUrl}/salones`),
         ]);
         setMesas(resMesas.data);
         setSalones(resSalones.data);
         setSalonSeleccionado(resSalones.data[0]?.ID_Salon);
         setMesaSeleccionada(resMesas.data[0]?.ID_Mesa);
       } catch (err) {
-        console.error('❌ No se pudo cargar mesas o salones:', err);
+        console.error("❌ No se pudo cargar mesas o salones:", err);
       }
     };
     fetchLocales();
@@ -81,7 +90,9 @@ const PaginaPrincipal = () => {
   useEffect(() => {
     const fetchUsuario = async () => {
       try {
-        const res = await axios.get(`${backendUrl}/usuario`, { withCredentials: true });
+        const res = await axios.get(`${backendUrl}/usuario`, {
+          withCredentials: true,
+        });
         setUsuario(res.data);
       } catch (error) {
         setUsuario(null);
@@ -95,83 +106,106 @@ const PaginaPrincipal = () => {
   useEffect(() => {
     if (!cargandoUsuario && !usuario) {
       // Si no hay usuario autenticado, redirige al login
-      navigate('/');
+      navigate("/");
     }
   }, [usuario, cargandoUsuario, navigate]);
 
-  const agregarProducto = useCallback((ID_Producto: number) => {
-    const productoBase = productos.find(p => p.ID_Producto === ID_Producto);
-    if (!productoBase) return;
+  const agregarProducto = useCallback(
+    (ID_Producto: number) => {
+      const productoBase = productos.find((p) => p.ID_Producto === ID_Producto);
+      if (!productoBase) return;
 
-    setCarrito(prevCarrito => {
-      const itemExistente = prevCarrito.find(item => item.id === ID_Producto);
-      if (itemExistente) {
-        return prevCarrito.map(item =>
-          item.id === ID_Producto
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item
+      setCarrito((prevCarrito) => {
+        const itemExistente = prevCarrito.find(
+          (item) => item.id === ID_Producto
         );
-      } else {
-        const nuevoItem: ItemCarrito = {
-          id: productoBase.ID_Producto,
-          producto: productoBase,
-          cantidad: 1,
-          comentarios: []
-        };
-        return [...prevCarrito, nuevoItem];
-      }
-    });
-  }, [productos]);
+        if (itemExistente) {
+          return prevCarrito.map((item) =>
+            item.id === ID_Producto
+              ? { ...item, cantidad: item.cantidad + 1 }
+              : item
+          );
+        } else {
+          const nuevoItem: ItemCarrito = {
+            id: productoBase.ID_Producto,
+            producto: productoBase,
+            cantidad: 1,
+            comentarios: [],
+          };
+          return [...prevCarrito, nuevoItem];
+        }
+      });
+    },
+    [productos]
+  );
 
   const quitarUnidad = (ID_Producto: number) => {
-    const existente = carrito.find(item => item.producto.ID_Producto === ID_Producto);
+    const existente = carrito.find(
+      (item) => item.producto.ID_Producto === ID_Producto
+    );
     if (!existente) return;
 
     if (existente.cantidad > 1) {
-      setCarrito(carrito.map(item =>
-        item.producto.ID_Producto === ID_Producto ? { ...item, cantidad: item.cantidad - 1 } : item
-      ));
+      setCarrito(
+        carrito.map((item) =>
+          item.producto.ID_Producto === ID_Producto
+            ? { ...item, cantidad: item.cantidad - 1 }
+            : item
+        )
+      );
     } else {
-      setCarrito(carrito.filter(item => item.producto.ID_Producto !== ID_Producto));
+      setCarrito(
+        carrito.filter((item) => item.producto.ID_Producto !== ID_Producto)
+      );
     }
   };
 
-  const actualizarComentario = (id: number, index: number, comentario: string) => {
-    setCarrito(carrito.map(item => {
-      if (item.id === id) {
-        const nuevosComentarios = [...item.comentarios];
-        nuevosComentarios[index] = comentario;
-        return { ...item, comentarios: nuevosComentarios };
-      }
-      return item;
-    }));
+  const actualizarComentario = (
+    id: number,
+    index: number,
+    comentario: string
+  ) => {
+    setCarrito(
+      carrito.map((item) => {
+        if (item.id === id) {
+          const nuevosComentarios = [...item.comentarios];
+          nuevosComentarios[index] = comentario;
+          return { ...item, comentarios: nuevosComentarios };
+        }
+        return item;
+      })
+    );
   };
 
   const añadirComentario = (id: number) => {
-    setCarrito(carrito => carrito.map(item => {
-      if (item.id === id) {
-        if (item.comentarios.length < item.cantidad) {
-          return { ...item, comentarios: [...item.comentarios, ''] };
-        } else {
-          alert('No puedes añadir más comentarios que la cantidad de productos.');
+    setCarrito((carrito) =>
+      carrito.map((item) => {
+        if (item.id === id) {
+          if (item.comentarios.length < item.cantidad) {
+            return { ...item, comentarios: [...item.comentarios, ""] };
+          } else {
+            alert(
+              "No puedes añadir más comentarios que la cantidad de productos."
+            );
+          }
         }
-      }
-      return item;
-    }));
+        return item;
+      })
+    );
   };
 
   const quitarProducto = (id: number) => {
-    setCarrito(carrito.filter(item => item.id !== id));
+    setCarrito(carrito.filter((item) => item.id !== id));
   };
 
   // Guardar carrito en sessionStorage
   useEffect(() => {
-    sessionStorage.setItem('carrito', JSON.stringify(carrito));
+    sessionStorage.setItem("carrito", JSON.stringify(carrito));
   }, [carrito]);
 
   // Cargar carrito del sessionStorage solo una vez
   useEffect(() => {
-    const carritoGuardado = sessionStorage.getItem('carrito');
+    const carritoGuardado = sessionStorage.getItem("carrito");
     if (carritoGuardado) {
       try {
         const datos = JSON.parse(carritoGuardado);
@@ -187,44 +221,54 @@ const PaginaPrincipal = () => {
   const confirmarPedido = async () => {
     if (carrito.length === 0) return;
     try {
-      await axios.post(`${backendUrl}/pedidos`, {
-        Fecha_hora: new Date().toISOString(),
-        ID_Estado: 1,
-        ID_Mesa: mesaSeleccionada,
-        detalles: carrito.flatMap(item =>
-          Array.from({ length: item.cantidad }).map((_, idx) => ({
-            Cantidad: 1,
-            Comentario: (item.comentarios[idx] ?? '').trim(),
-            ID_Estado: 1,
-            ID_Producto: item.producto.ID_Producto
-          }))
-        )
-      }, { withCredentials: true });
+      await axios.post(
+        `${backendUrl}/pedidos`,
+        {
+          Fecha_hora: new Date().toISOString(),
+          ID_Estado: 1,
+          ID_Mesa: mesaSeleccionada,
+          detalles: carrito.flatMap((item) =>
+            Array.from({ length: item.cantidad }).map((_, idx) => ({
+              Cantidad: 1,
+              Comentario: (item.comentarios[idx] ?? "").trim(),
+              ID_Estado: 1,
+              ID_Producto: item.producto.ID_Producto,
+            }))
+          ),
+        },
+        { withCredentials: true }
+      );
 
-      alert('✅ Pedido enviado con éxito');
+      alert("✅ Pedido enviado con éxito");
       setCarrito([]);
       setCarritoAbierto(false);
-      sessionStorage.removeItem('carrito'); // ← Limpia el carrito guardado
+      sessionStorage.removeItem("carrito"); // ← Limpia el carrito guardado
     } catch (error) {
-      console.error('❌ Error al enviar pedido:', error);
-      alert('Error al enviar pedido');
+      console.error("❌ Error al enviar pedido:", error);
+      alert("Error al enviar pedido");
     }
   };
 
   const cancelarPedido = () => {
     setCarrito([]);
     setCarritoAbierto(false);
-    sessionStorage.removeItem('carrito'); // ← Limpia el carrito guardado
+    sessionStorage.removeItem("carrito"); // ← Limpia el carrito guardado
   };
 
   const obtenerCantidad = (ID_Producto: number) => {
-    const encontrado = carrito.find(item => item.producto.ID_Producto === ID_Producto);
+    const encontrado = carrito.find(
+      (item) => item.producto.ID_Producto === ID_Producto
+    );
     return encontrado ? encontrado.cantidad : 0;
   };
 
   const productosFiltrados = productos.filter((prod) => {
-    const coincideCategoria = categoriaSeleccionada === null || prod.ID_Categoria === categoriaSeleccionada;
-    const coincideBusqueda = prod.Nombre.toLowerCase().includes(busqueda.toLowerCase());
+    const coincideCategoria =
+      categoriaSeleccionada === null ||
+      prod.ID_Categoria === categoriaSeleccionada;
+    const coincideBusqueda = prod.Nombre.toLowerCase().includes(
+      busqueda.toLowerCase()
+    );
     return coincideCategoria && coincideBusqueda;
   });
 
@@ -232,17 +276,23 @@ const PaginaPrincipal = () => {
 
   const CarritoContenido = () => {
     // Estado local para comentarios temporales
-    const [comentariosTemp, setComentariosTemp] = useState<{ [key: string]: string }>({});
+    const [comentariosTemp, setComentariosTemp] = useState<{
+      [key: string]: string;
+    }>({});
 
-    const handleComentarioChange = (itemId: number, index: number, value: string) => {
-      setComentariosTemp(prev => ({
+    const handleComentarioChange = (
+      itemId: number,
+      index: number,
+      value: string
+    ) => {
+      setComentariosTemp((prev) => ({
         ...prev,
-        [`${itemId}-${index}`]: value
+        [`${itemId}-${index}`]: value,
       }));
     };
 
     const handleComentarioBlur = (itemId: number, index: number) => {
-      const value = comentariosTemp[`${itemId}-${index}`] ?? '';
+      const value = comentariosTemp[`${itemId}-${index}`] ?? "";
       actualizarComentario(itemId, index, value);
     };
 
@@ -256,10 +306,15 @@ const PaginaPrincipal = () => {
           <>
             {carrito.map((item) => (
               <div key={item.id} className="seleccionado-item">
-                <div className="item-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <strong className="nombre-producto">{item.producto.Nombre}</strong>
-                  <button 
-                    onClick={() => quitarProducto(item.id)} 
+                <div
+                  className="item-header"
+                  style={{ display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  <strong className="nombre-producto">
+                    {item.producto.Nombre}
+                  </strong>
+                  <button
+                    onClick={() => quitarProducto(item.id)}
                     className="eliminar-item-btn"
                     title="Eliminar producto del carrito"
                   >
@@ -267,12 +322,19 @@ const PaginaPrincipal = () => {
                   </button>
                 </div>
 
-                <div className="cantidad-controls" style={{ marginBottom: '12px' }}>
-                  <button onClick={() => quitarUnidad(item.producto.ID_Producto)}>
+                <div
+                  className="cantidad-controls"
+                  style={{ marginBottom: "12px" }}
+                >
+                  <button
+                    onClick={() => quitarUnidad(item.producto.ID_Producto)}
+                  >
                     -
                   </button>
                   <span>{item.cantidad}</span>
-                  <button onClick={() => agregarProducto(item.producto.ID_Producto)}>
+                  <button
+                    onClick={() => agregarProducto(item.producto.ID_Producto)}
+                  >
                     +
                   </button>
                 </div>
@@ -285,22 +347,28 @@ const PaginaPrincipal = () => {
                         <input
                           type="text"
                           value={comentariosTemp[`${item.id}-${idx}`] ?? coment}
-                          onChange={e => handleComentarioChange(item.id, idx, e.target.value)}
+                          onChange={(e) =>
+                            handleComentarioChange(item.id, idx, e.target.value)
+                          }
                           onBlur={() => handleComentarioBlur(item.id, idx)}
                           className="comentario-input"
                           placeholder="Agregar comentario..."
-                          style={{ width: '80%' }}
+                          style={{ width: "80%" }}
                         />
                         <button
                           className="eliminar-comentario-btn"
                           style={{ marginLeft: 8 }}
                           onClick={() => {
-                            const nuevosComentarios = item.comentarios.filter((_, i) => i !== idx);
-                            setCarrito(carrito.map(it =>
-                              it.id === item.id
-                                ? { ...it, comentarios: nuevosComentarios }
-                                : it
-                            ));
+                            const nuevosComentarios = item.comentarios.filter(
+                              (_, i) => i !== idx
+                            );
+                            setCarrito(
+                              carrito.map((it) =>
+                                it.id === item.id
+                                  ? { ...it, comentarios: nuevosComentarios }
+                                  : it
+                              )
+                            );
                           }}
                           title="Eliminar comentario"
                         >
@@ -330,22 +398,22 @@ const PaginaPrincipal = () => {
 
   useEffect(() => {
     if (carritoAbierto) {
-      document.body.style.overflow = 'hidden';
-      document.body.classList.add('body-no-scroll');
+      document.body.style.overflow = "hidden";
+      document.body.classList.add("body-no-scroll");
     } else {
-      document.body.style.overflow = '';
-      document.body.classList.remove('body-no-scroll');
+      document.body.style.overflow = "";
+      document.body.classList.remove("body-no-scroll");
     }
     // Limpia el efecto al desmontar
     return () => {
-      document.body.style.overflow = '';
-      document.body.classList.remove('body-no-scroll');
+      document.body.style.overflow = "";
+      document.body.classList.remove("body-no-scroll");
     };
   }, [carritoAbierto]);
 
   // 1. Carga el carrito crudo del localStorage solo una vez
   useEffect(() => {
-    const carritoGuardado = sessionStorage.getItem('carrito');
+    const carritoGuardado = sessionStorage.getItem("carrito");
     if (carritoGuardado) {
       try {
         const datos = JSON.parse(carritoGuardado);
@@ -361,18 +429,20 @@ const PaginaPrincipal = () => {
   useEffect(() => {
     if (productos.length === 0 || carrito.length === 0) return;
 
-    setCarrito(prev =>
-      prev.map(item => {
+    setCarrito((prev) =>
+      prev.map((item) => {
         // Si ya tiene producto completo, no hacer nada
         if (item.producto && item.producto.Nombre) return item;
         const productoCompleto = productos.find(
-          p => p.ID_Producto === (item.producto?.ID_Producto ?? item.id)
+          (p) => p.ID_Producto === (item.producto?.ID_Producto ?? item.id)
         );
         if (!productoCompleto) return item;
         return {
           ...item,
           producto: productoCompleto,
-          comentarios: Array.isArray(item.comentarios) ? item.comentarios : ['']
+          comentarios: Array.isArray(item.comentarios)
+            ? item.comentarios
+            : [""],
         };
       })
     );
@@ -396,14 +466,16 @@ const PaginaPrincipal = () => {
           />
         </div>
 
-        <button className="icono-usuario" onClick={() => navigate('/perfil')}>
+        <button className="icono-usuario" onClick={() => navigate("/perfil")}>
           <User size={24} />
         </button>
       </header>
 
       <div className="categorias-carrusel">
         <div
-          className={`categoria-item ${categoriaSeleccionada === null ? 'activa' : ''}`}
+          className={`categoria-item ${
+            categoriaSeleccionada === null ? "activa" : ""
+          }`}
           onClick={() => setCategoriaSeleccionada(null)}
         >
           Todas
@@ -411,7 +483,9 @@ const PaginaPrincipal = () => {
         {categorias.map((cat) => (
           <div
             key={cat.ID_Categoria}
-            className={`categoria-item ${categoriaSeleccionada === cat.ID_Categoria ? 'activa' : ''}`}
+            className={`categoria-item ${
+              categoriaSeleccionada === cat.ID_Categoria ? "activa" : ""
+            }`}
             onClick={() => setCategoriaSeleccionada(cat.ID_Categoria)}
           >
             {cat.Nombre}
@@ -422,7 +496,9 @@ const PaginaPrincipal = () => {
       <div className="contenido">
         <div className="productos">
           {productosFiltrados.map((producto) => {
-            const itemEnCarrito = carrito.find(item => item.producto.ID_Producto === producto.ID_Producto);
+            const itemEnCarrito = carrito.find(
+              (item) => item.producto.ID_Producto === producto.ID_Producto
+            );
             return (
               <div key={producto.ID_Producto} className="producto">
                 <p className="nombre-producto">{producto.Nombre}</p>
@@ -435,9 +511,7 @@ const PaginaPrincipal = () => {
                   >
                     –
                   </button>
-                  <span>
-                    {obtenerCantidad(producto.ID_Producto)}
-                  </span>
+                  <span>{obtenerCantidad(producto.ID_Producto)}</span>
                   <button
                     type="button"
                     onClick={() => agregarProducto(producto.ID_Producto)}
@@ -451,25 +525,46 @@ const PaginaPrincipal = () => {
                     <strong>Comentarios:</strong>
                     <ul>
                       {itemEnCarrito.comentarios.map((coment, idx) => (
-                        <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <li
+                          key={idx}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                        >
                           <input
                             type="text"
                             value={coment}
-                            onChange={e => actualizarComentario(itemEnCarrito.id, idx, e.target.value)}
+                            onChange={(e) =>
+                              actualizarComentario(
+                                itemEnCarrito.id,
+                                idx,
+                                e.target.value
+                              )
+                            }
                             className="comentario-input"
                             placeholder="Agregar comentario..."
-                            style={{ width: '80%' }}
+                            style={{ width: "80%" }}
                           />
                           <button
                             className="eliminar-comentario-btn"
                             style={{ marginLeft: 4 }}
                             onClick={() => {
-                              const nuevosComentarios = itemEnCarrito.comentarios.filter((_, i) => i !== idx);
-                              setCarrito(carrito.map(item =>
-                                item.id === itemEnCarrito.id
-                                  ? { ...item, comentarios: nuevosComentarios }
-                                  : item
-                              ));
+                              const nuevosComentarios =
+                                itemEnCarrito.comentarios.filter(
+                                  (_, i) => i !== idx
+                                );
+                              setCarrito(
+                                carrito.map((item) =>
+                                  item.id === itemEnCarrito.id
+                                    ? {
+                                        ...item,
+                                        comentarios: nuevosComentarios,
+                                      }
+                                    : item
+                                )
+                              );
                             }}
                             title="Eliminar comentario"
                           >
@@ -479,7 +574,8 @@ const PaginaPrincipal = () => {
                       ))}
                     </ul>
                     {/* Solo muestra el botón si hay menos comentarios que cantidad */}
-                    {itemEnCarrito.comentarios.length < itemEnCarrito.cantidad && (
+                    {itemEnCarrito.comentarios.length <
+                      itemEnCarrito.cantidad && (
                       <button
                         className="anadir-comentario-btn"
                         onClick={() => añadirComentario(itemEnCarrito.id)}
@@ -508,15 +604,15 @@ const PaginaPrincipal = () => {
           <div className="seleccion">
             <label>Salón:</label>
             <select
-              value={salonSeleccionado || ''}
-              onChange={e => {
+              value={salonSeleccionado || ""}
+              onChange={(e) => {
                 const nuevoSalon = Number(e.target.value);
                 setSalonSeleccionado(nuevoSalon);
                 setMesaSeleccionada(undefined); // ← Esto fuerza a mostrar "Seleccione una mesa"
               }}
             >
               <option value="">Seleccione un salón</option>
-              {salones.map(salon => (
+              {salones.map((salon) => (
                 <option key={salon.ID_Salon} value={salon.ID_Salon}>
                   {salon.Nombre}
                 </option>
@@ -525,14 +621,19 @@ const PaginaPrincipal = () => {
 
             <label>Mesa:</label>
             <select
-              value={mesaSeleccionada || ''}
-              onChange={e => setMesaSeleccionada(Number(e.target.value))}
+              value={mesaSeleccionada || ""}
+              onChange={(e) => setMesaSeleccionada(Number(e.target.value))}
               disabled={!salonSeleccionado}
             >
               <option value="">Seleccione una mesa</option>
               {mesas
-                .filter(mesa => mesa.salon?.Nombre === salones.find(s => s.ID_Salon === salonSeleccionado)?.Nombre)
-                .map(mesa => (
+                .filter(
+                  (mesa) =>
+                    mesa.salon?.Nombre ===
+                    salones.find((s) => s.ID_Salon === salonSeleccionado)
+                      ?.Nombre
+                )
+                .map((mesa) => (
                   <option key={mesa.ID_Mesa} value={mesa.ID_Mesa}>
                     Mesa {mesa.Numero_mesa}
                   </option>
@@ -541,8 +642,8 @@ const PaginaPrincipal = () => {
           </div>
 
           <div className="botones-pedido">
-            <button 
-              className="confirmar" 
+            <button
+              className="confirmar"
               onClick={confirmarPedido}
               disabled={carrito.length === 0}
             >
@@ -557,8 +658,8 @@ const PaginaPrincipal = () => {
 
       {/* Carrito flotante - Móvil */}
       <div className="carrito-flotante">
-        <button 
-          className="carrito-toggle" 
+        <button
+          className="carrito-toggle"
           onClick={() => setCarritoAbierto(true)}
         >
           <ShoppingCart size={24} />
@@ -569,22 +670,22 @@ const PaginaPrincipal = () => {
       </div>
 
       {/* Modal del carrito - Móvil */}
-      <div 
-        className={`carrito-overlay ${carritoAbierto ? 'activo' : ''}`}
+      <div
+        className={`carrito-overlay ${carritoAbierto ? "activo" : ""}`}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
             setCarritoAbierto(false);
           }
         }}
       >
-        <div 
+        <div
           className="carrito-modal"
           onClick={(e) => e.stopPropagation()} // ← Añade esto
         >
           <div className="modal-header">
             <h3>Carrito ({totalItems} items)</h3>
-            <button 
-              className="cerrar-modal" 
+            <button
+              className="cerrar-modal"
               onClick={() => setCarritoAbierto(false)}
             >
               <X size={20} />
@@ -599,15 +700,15 @@ const PaginaPrincipal = () => {
             <div className="seleccion">
               <label>Salón:</label>
               <select
-                value={salonSeleccionado || ''}
-                onChange={e => {
+                value={salonSeleccionado || ""}
+                onChange={(e) => {
                   const nuevoSalon = Number(e.target.value);
                   setSalonSeleccionado(nuevoSalon);
                   setMesaSeleccionada(undefined); // ← Esto fuerza a mostrar "Seleccione una mesa"
                 }}
               >
                 <option value="">Seleccione un salón</option>
-                {salones.map(salon => (
+                {salones.map((salon) => (
                   <option key={salon.ID_Salon} value={salon.ID_Salon}>
                     {salon.Nombre}
                   </option>
@@ -616,14 +717,19 @@ const PaginaPrincipal = () => {
 
               <label>Mesa:</label>
               <select
-                value={mesaSeleccionada || ''}
-                onChange={e => setMesaSeleccionada(Number(e.target.value))}
+                value={mesaSeleccionada || ""}
+                onChange={(e) => setMesaSeleccionada(Number(e.target.value))}
                 disabled={!salonSeleccionado}
               >
                 <option value="">Seleccione una mesa</option>
                 {mesas
-                  .filter(mesa => mesa.salon?.Nombre === salones.find(s => s.ID_Salon === salonSeleccionado)?.Nombre)
-                  .map(mesa => (
+                  .filter(
+                    (mesa) =>
+                      mesa.salon?.Nombre ===
+                      salones.find((s) => s.ID_Salon === salonSeleccionado)
+                        ?.Nombre
+                  )
+                  .map((mesa) => (
                     <option key={mesa.ID_Mesa} value={mesa.ID_Mesa}>
                       Mesa {mesa.Numero_mesa}
                     </option>
@@ -632,8 +738,8 @@ const PaginaPrincipal = () => {
             </div>
 
             <div className="botones-pedido">
-              <button 
-                className="confirmar" 
+              <button
+                className="confirmar"
                 onClick={confirmarPedido}
                 disabled={carrito.length === 0}
               >

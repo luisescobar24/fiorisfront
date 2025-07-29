@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import '../estilos/lista_areas.css'; // Ajusta la ruta si tu carpeta de estilos es diferente
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import "../estilos/lista_areas.css"; // Ajusta la ruta si tu carpeta de estilos es diferente
 
 interface Area {
   ID_Area: number;
@@ -13,7 +13,7 @@ const ListaAreas: React.FC = () => {
   const [areas, setAreas] = useState<Area[]>([]);
   const [cargando, setCargando] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<{ Nombre: string }>({ Nombre: '' });
+  const [formData, setFormData] = useState<{ Nombre: string }>({ Nombre: "" });
   const [editId, setEditId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -33,12 +33,12 @@ const ListaAreas: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Seguro que deseas eliminar esta área?')) return;
+    if (!window.confirm("¿Seguro que deseas eliminar esta área?")) return;
     try {
       await axios.delete(`${backendUrl}/areas/${id}`);
       fetchAreas();
     } catch (error) {
-      alert('Error al eliminar área');
+      alert("Error al eliminar área");
     }
   };
 
@@ -50,7 +50,7 @@ const ListaAreas: React.FC = () => {
 
   const handleAdd = () => {
     setEditId(null);
-    setFormData({ Nombre: '' });
+    setFormData({ Nombre: "" });
     setShowForm(true);
   };
 
@@ -65,18 +65,19 @@ const ListaAreas: React.FC = () => {
       setShowForm(false);
       fetchAreas();
     } catch (error) {
-      alert('Error al guardar área');
+      alert("Error al guardar área");
     }
   };
 
-  if (cargando) return <div className="lista-areas-container">Cargando áreas...</div>;
+  if (cargando)
+    return <div className="lista-areas-container">Cargando áreas...</div>;
 
   return (
     <div className="lista-areas-container">
       <h2>Lista de Áreas</h2>
       <button onClick={handleAdd}>Agregar Área</button>
       {showForm && (
-        <form onSubmit={handleFormSubmit} style={{ margin: '1em 0' }}>
+        <form onSubmit={handleFormSubmit} style={{ margin: "1em 0" }}>
           <input
             type="text"
             placeholder="Nombre"
@@ -84,7 +85,9 @@ const ListaAreas: React.FC = () => {
             onChange={(e) => setFormData({ Nombre: e.target.value })}
             required
           />
-          <button type="submit">{editId ? 'Guardar Cambios' : 'Agregar'}</button>
+          <button type="submit">
+            {editId ? "Guardar Cambios" : "Agregar"}
+          </button>
           <button type="button" onClick={() => setShowForm(false)}>
             Cancelar
           </button>
@@ -105,7 +108,9 @@ const ListaAreas: React.FC = () => {
               <td>{area.Nombre}</td>
               <td>
                 <button onClick={() => handleEdit(area)}>Editar</button>
-                <button onClick={() => handleDelete(area.ID_Area)}>Eliminar</button>
+                <button onClick={() => handleDelete(area.ID_Area)}>
+                  Eliminar
+                </button>
               </td>
             </tr>
           ))}

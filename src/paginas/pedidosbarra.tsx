@@ -1,14 +1,12 @@
-import { useEffect, useState, useCallback } from 'react';
-import axios from 'axios';
-import { io } from 'socket.io-client';
-import { useNavigate } from 'react-router-dom';
-import '../estilos/pedidosbarra.css';
-
+import { useEffect, useState, useCallback } from "react";
+import axios from "axios";
+import { io } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
+import "../estilos/pedidosbarra.css";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL, {
   transports: ["websocket"],
 });
-
 
 interface Pedido {
   ID_Pedido: number;
@@ -33,9 +31,7 @@ interface Pedido {
 
 const PedidosBarra = () => {
   const [detallesBarra, setDetallesBarra] = useState<any[]>([]);
-  const [, setServidos] = useState<{ [idDetalle: number]: number }>(
-    {}
-  );
+  const [, setServidos] = useState<{ [idDetalle: number]: number }>({});
   const navigate = useNavigate();
 
   // Extrae la función para poder reutilizarla
@@ -52,18 +48,18 @@ const PedidosBarra = () => {
 
       const detalles = pedidosFiltrados.flatMap((pedido: Pedido) =>
         pedido.detalles
-          .filter((detalle) => detalle.producto.area?.Nombre === 'Barra')
+          .filter((detalle) => detalle.producto.area?.Nombre === "Barra")
           .flatMap((detalle) =>
             Array.from({ length: detalle.Cantidad }).map((_, unidadIdx) => ({
               ...detalle,
               ID_Pedido: pedido.ID_Pedido,
               Fecha_hora: pedido.Fecha_hora,
-              Mesa: pedido.mesa?.Numero_mesa || 'Sin mesa',
-              Salon: pedido.mesa?.salon?.Nombre || 'Sin salón', // <--- AGREGA ESTA LÍNEA
+              Mesa: pedido.mesa?.Numero_mesa || "Sin mesa",
+              Salon: pedido.mesa?.salon?.Nombre || "Sin salón", // <--- AGREGA ESTA LÍNEA
               Comentario:
-                detalle.Comentario?.split(';')[unidadIdx]?.trim() ||
+                detalle.Comentario?.split(";")[unidadIdx]?.trim() ||
                 detalle.Comentario ||
-                'Sin comentario',
+                "Sin comentario",
             }))
           )
       );
@@ -71,23 +67,23 @@ const PedidosBarra = () => {
       setDetallesBarra(detalles);
       setServidos({}); // Reinicia el conteo al recargar
     } catch (error) {
-      console.error('Error al obtener pedidos de barra:', error);
+      console.error("Error al obtener pedidos de barra:", error);
     }
   }, []);
 
   useEffect(() => {
     fetchPedidos();
 
-    socket.on('connect', () => {
-      console.log('Conectado al servidor WebSocket');
+    socket.on("connect", () => {
+      console.log("Conectado al servidor WebSocket");
     });
 
-    socket.on('nuevo-pedido', () => {
+    socket.on("nuevo-pedido", () => {
       fetchPedidos(); // Refresca la lista cuando llega un nuevo pedido
     });
 
     return () => {
-      socket.off('nuevo-pedido');
+      socket.off("nuevo-pedido");
     };
   }, [fetchPedidos]);
 
@@ -100,9 +96,11 @@ const PedidosBarra = () => {
         { withCredentials: true }
       );
       // Elimina todas las unidades de ese detalle del frontend
-      setDetallesBarra((prev) => prev.filter((d) => d.ID_Detalle !== idDetalle));
+      setDetallesBarra((prev) =>
+        prev.filter((d) => d.ID_Detalle !== idDetalle)
+      );
     } catch (error) {
-      alert('No se pudo actualizar el estado');
+      alert("No se pudo actualizar el estado");
     }
   };
 
@@ -115,9 +113,14 @@ const PedidosBarra = () => {
     });
 
     setServidos((prev) => {
-      const nuevo = { ...prev, [detalle.ID_Detalle]: (prev[detalle.ID_Detalle] || 0) + 1 };
+      const nuevo = {
+        ...prev,
+        [detalle.ID_Detalle]: (prev[detalle.ID_Detalle] || 0) + 1,
+      };
       // Si ya se sirvieron todas las unidades, actualiza en la base de datos
-      const totalUnidades = detallesBarra.filter(d => d.ID_Detalle === detalle.ID_Detalle).length;
+      const totalUnidades = detallesBarra.filter(
+        (d) => d.ID_Detalle === detalle.ID_Detalle
+      ).length;
       if (nuevo[detalle.ID_Detalle] === totalUnidades) {
         marcarComoServido(detalle.ID_Detalle);
       }
@@ -128,10 +131,7 @@ const PedidosBarra = () => {
   return (
     <div>
       <div className="barra-header">
-        <button
-          onClick={() => navigate('/perfil')}
-          className="btn-ir-perfil"
-        >
+        <button onClick={() => navigate("/perfil")} className="btn-ir-perfil">
           Ir a Perfil
         </button>
         <h2>Productos de Barra Activos</h2>
@@ -144,7 +144,7 @@ const PedidosBarra = () => {
               new Date(b.Fecha_hora).getTime()
           )
           .map((detalle, idx) => (
-            <div key={detalle.ID_Detalle + '-' + idx} className="pedido">
+            <div key={detalle.ID_Detalle + "-" + idx} className="pedido">
               <h3>{detalle.producto.Nombre}</h3>
               <p>
                 <strong>Mesa:</strong> {detalle.Mesa}
@@ -153,11 +153,12 @@ const PedidosBarra = () => {
                 <strong>Salón:</strong> {detalle.Salon}
               </p>
               <p>
-                <strong>Fecha:</strong>{' '}
+                <strong>Fecha:</strong>{" "}
                 {new Date(detalle.Fecha_hora).toLocaleString()}
               </p>
               <p>
-                <strong>Comentario:</strong> {detalle.Comentario || 'Sin comentario'}
+                <strong>Comentario:</strong>{" "}
+                {detalle.Comentario || "Sin comentario"}
               </p>
               <button
                 style={{ marginTop: 8 }}
@@ -173,4 +174,3 @@ const PedidosBarra = () => {
 };
 
 export default PedidosBarra;
-

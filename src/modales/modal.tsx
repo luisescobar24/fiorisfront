@@ -1,5 +1,5 @@
-import React from 'react';
-import '../estilos/modal.css'; // O el estilo que uses
+import React from "react";
+import "../estilos/modal.css"; // O el estilo que uses
 
 type ModalProps = {
   isOpen: boolean;
@@ -18,6 +18,5 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
     </div>
   );
 };
-
 
 export default Modal;

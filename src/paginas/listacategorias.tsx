@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import '../estilos/listacategorias.css'; // Asegúrate que la ruta sea correcta
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import "../estilos/listacategorias.css"; // Asegúrate que la ruta sea correcta
 
 interface Categoria {
   ID_Categoria: number;
@@ -12,7 +12,7 @@ const ListaCategorias: React.FC = () => {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [cargando, setCargando] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<{ Nombre: string }>({ Nombre: '' });
+  const [formData, setFormData] = useState<{ Nombre: string }>({ Nombre: "" });
   const [editId, setEditId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -32,12 +32,12 @@ const ListaCategorias: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Seguro que deseas eliminar esta categoría?')) return;
+    if (!window.confirm("¿Seguro que deseas eliminar esta categoría?")) return;
     try {
       await axios.delete(`${backendUrl}/categorias/${id}`);
       fetchCategorias();
     } catch (error) {
-      alert('Error al eliminar categoría');
+      alert("Error al eliminar categoría");
     }
   };
 
@@ -49,7 +49,7 @@ const ListaCategorias: React.FC = () => {
 
   const handleAdd = () => {
     setEditId(null);
-    setFormData({ Nombre: '' });
+    setFormData({ Nombre: "" });
     setShowForm(true);
   };
 
@@ -64,26 +64,31 @@ const ListaCategorias: React.FC = () => {
       setShowForm(false);
       fetchCategorias();
     } catch (error) {
-      alert('Error al guardar categoría');
+      alert("Error al guardar categoría");
     }
   };
 
-  if (cargando) return <div className="lista-categorias-container">Cargando categorías...</div>;
+  if (cargando)
+    return (
+      <div className="lista-categorias-container">Cargando categorías...</div>
+    );
 
   return (
     <div className="lista-categorias-container">
       <h2>Lista de Categorías</h2>
       <button onClick={handleAdd}>Agregar Categoría</button>
       {showForm && (
-        <form onSubmit={handleFormSubmit} style={{ margin: '1em 0' }}>
+        <form onSubmit={handleFormSubmit} style={{ margin: "1em 0" }}>
           <input
             type="text"
             placeholder="Nombre"
             value={formData.Nombre}
-            onChange={e => setFormData({ Nombre: e.target.value })}
+            onChange={(e) => setFormData({ Nombre: e.target.value })}
             required
           />
-          <button type="submit">{editId ? 'Guardar Cambios' : 'Agregar'}</button>
+          <button type="submit">
+            {editId ? "Guardar Cambios" : "Agregar"}
+          </button>
           <button type="button" onClick={() => setShowForm(false)}>
             Cancelar
           </button>
@@ -104,7 +109,9 @@ const ListaCategorias: React.FC = () => {
               <td>{cat.Nombre}</td>
               <td>
                 <button onClick={() => handleEdit(cat)}>Editar</button>
-                <button onClick={() => handleDelete(cat.ID_Categoria)}>Eliminar</button>
+                <button onClick={() => handleDelete(cat.ID_Categoria)}>
+                  Eliminar
+                </button>
               </td>
             </tr>
           ))}

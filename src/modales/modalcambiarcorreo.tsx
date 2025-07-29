@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import '../estilos/modal.css';
-import '../estilos/modalcambiarcorreo.css'
+import React, { useState } from "react";
+import "../estilos/modal.css";
+import "../estilos/modalcambiarcorreo.css";
 
 type ModalProps = {
   isOpen: boolean;
@@ -9,10 +9,10 @@ type ModalProps = {
 
 const ModalCambiarCorreo: React.FC<ModalProps> = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1);
-  const [correoActual, setCorreoActual] = useState('');
-  const [codigoActual, setCodigoActual] = useState('');
-  const [correoNuevo, setCorreoNuevo] = useState('');
-  const [codigoNuevo, setCodigoNuevo] = useState('');
+  const [correoActual, setCorreoActual] = useState("");
+  const [codigoActual, setCodigoActual] = useState("");
+  const [correoNuevo, setCorreoNuevo] = useState("");
+  const [codigoNuevo, setCodigoNuevo] = useState("");
 
   if (!isOpen) return null;
 
@@ -31,10 +31,10 @@ const ModalCambiarCorreo: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
   const resetSteps = () => {
     setStep(1);
-    setCorreoActual('');
-    setCodigoActual('');
-    setCorreoNuevo('');
-    setCodigoNuevo('');
+    setCorreoActual("");
+    setCodigoActual("");
+    setCorreoNuevo("");
+    setCodigoNuevo("");
   };
 
   return (
@@ -107,7 +107,10 @@ const ModalCambiarCorreo: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         {step === 5 && (
           <>
             <h2>Correo actualizado con éxito</h2>
-            <p>Tu correo fue cambiado correctamente a: <strong>{correoNuevo}</strong></p>
+            <p>
+              Tu correo fue cambiado correctamente a:{" "}
+              <strong>{correoNuevo}</strong>
+            </p>
             <div className="modal-buttons">
               <button onClick={onClose}>Cerrar</button>
             </div>

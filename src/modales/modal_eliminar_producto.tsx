@@ -1,5 +1,5 @@
 import React from "react";
-import '../estilos/modal_eliminar_producto.css';
+import "../estilos/modal_eliminar_producto.css";
 
 interface EliminarProductoProps {
   isOpen: boolean;
@@ -21,16 +21,20 @@ export const EliminarProducto: React.FC<EliminarProductoProps> = ({
       <div className="modal-eliminar">
         <h2 className="modal-titulo">Eliminar Producto</h2>
         <p className="modal-texto">
-          ¿Estás seguro de que deseas eliminar <strong>{producto.nombre}</strong>?
+          ¿Estás seguro de que deseas eliminar{" "}
+          <strong>{producto.nombre}</strong>?
         </p>
         <div className="modal-botones">
-          <button onClick={onClose} className="btn-cancelar">Cancelar</button>
-          <button onClick={onEliminar} className="btn-eliminar">Eliminar</button>
+          <button onClick={onClose} className="btn-cancelar">
+            Cancelar
+          </button>
+          <button onClick={onEliminar} className="btn-eliminar">
+            Eliminar
+          </button>
         </div>
       </div>
     </div>
   );
 };
-
 
 export default EliminarProducto;

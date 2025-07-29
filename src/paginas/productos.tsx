@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
-import AgregarProducto from '../modales/modal_agregar_producto';
-import EditarProducto from '../modales/modal_editar_producto';
-import EliminarProducto from '../modales/modal_eliminar_producto';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import '../estilos/productos.css';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import AgregarProducto from "../modales/modal_agregar_producto";
+import EditarProducto from "../modales/modal_editar_producto";
+import EliminarProducto from "../modales/modal_eliminar_producto";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "../estilos/productos.css";
+import { useNavigate } from "react-router-dom";
 
 const Productos: React.FC = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -16,12 +16,15 @@ const Productos: React.FC = () => {
   const [productos, setProductos] = useState<any[]>([]);
   const [categorias, setCategorias] = useState<any[]>([]);
   const [areas, setAreas] = useState<any[]>([]);
-  const [busqueda, setBusqueda] = useState<string>('');
+  const [busqueda, setBusqueda] = useState<string>("");
 
   const [modalAgregar, setModalAgregar] = useState(false);
   const [productoEditar, setProductoEditar] = useState<any | null>(null);
   const [productoEliminar, setProductoEliminar] = useState<any | null>(null);
-  const [usuario, setUsuario] = useState<{ ID_Usuario: number; Nombre: string } | null>(null);
+  const [usuario, setUsuario] = useState<{
+    ID_Usuario: number;
+    Nombre: string;
+  } | null>(null);
   const [cargandoUsuario, setCargandoUsuario] = useState(true);
 
   const fetchData = async () => {
@@ -30,11 +33,11 @@ const Productos: React.FC = () => {
       const resCategorias = await axios.get(`${backendUrl}/categorias`);
       const resAreas = await axios.get(`${backendUrl}/areas`);
 
-      setProductos(resProductos.data);  // ✅ sin transformar
+      setProductos(resProductos.data); // ✅ sin transformar
       setCategorias(resCategorias.data);
       setAreas(resAreas.data);
     } catch (err) {
-      toast.error('Error al cargar los datos');
+      toast.error("Error al cargar los datos");
       console.error(err);
     }
   };
@@ -43,14 +46,14 @@ const Productos: React.FC = () => {
     fetchData();
   }, []);
 
-  const handleAgregarProducto = async (producto: Omit<any, 'id'>) => {
+  const handleAgregarProducto = async (producto: Omit<any, "id">) => {
     try {
       await axios.post(`${backendUrl}/agregar-productos`, producto);
-      toast.success('Producto agregado correctamente');
+      toast.success("Producto agregado correctamente");
       await fetchData();
       setModalAgregar(false);
     } catch (err) {
-      toast.error('Error al agregar producto');
+      toast.error("Error al agregar producto");
       console.error(err);
     }
   };
@@ -63,11 +66,11 @@ const Productos: React.FC = () => {
         id_categoria: productoEditado.idCategoria,
         id_area: productoEditado.idArea,
       });
-      toast.success('Producto editado correctamente');
+      toast.success("Producto editado correctamente");
       await fetchData();
       setProductoEditar(null);
     } catch (err) {
-      toast.error('Error al editar producto');
+      toast.error("Error al editar producto");
       console.error(err);
     }
   };
@@ -75,11 +78,11 @@ const Productos: React.FC = () => {
   const handleEliminarProducto = async (id: number) => {
     try {
       await axios.delete(`${backendUrl}/productos/${id}`);
-      toast.success('Producto eliminado correctamente');
+      toast.success("Producto eliminado correctamente");
       await fetchData();
       setProductoEliminar(null);
     } catch (err) {
-      toast.error('Error al eliminar producto');
+      toast.error("Error al eliminar producto");
       console.error(err);
     }
   };
@@ -87,7 +90,9 @@ const Productos: React.FC = () => {
   useEffect(() => {
     const fetchUsuario = async () => {
       try {
-        const res = await axios.get(`${backendUrl}/usuario`, { withCredentials: true });
+        const res = await axios.get(`${backendUrl}/usuario`, {
+          withCredentials: true,
+        });
         setUsuario(res.data);
       } catch (error) {
         setUsuario(null);
@@ -100,7 +105,7 @@ const Productos: React.FC = () => {
 
   useEffect(() => {
     if (!cargandoUsuario && !usuario) {
-      navigate('/');
+      navigate("/");
     }
   }, [usuario, cargandoUsuario, navigate]);
 
@@ -116,7 +121,7 @@ const Productos: React.FC = () => {
           type="text"
           placeholder="Buscar producto..."
           value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
+          onChange={(e) => setBusqueda(e.target.value)}
           className="input-busqueda"
         />
         <button className="btn-agregar" onClick={() => setModalAgregar(true)}>
@@ -136,20 +141,26 @@ const Productos: React.FC = () => {
         </thead>
         <tbody>
           {productos
-            .filter(prod =>
+            .filter((prod) =>
               prod.Nombre.toLowerCase().includes(busqueda.toLowerCase())
             )
             .map((prod) => (
               <tr key={prod.ID_Producto}>
                 <td>{prod.Nombre}</td>
                 <td>S/ {prod.Precio}</td>
-                <td>{prod.categoria?.Nombre || 'Sin categoría'}</td>
-                <td>{prod.area?.Nombre || 'Sin área'}</td>
+                <td>{prod.categoria?.Nombre || "Sin categoría"}</td>
+                <td>{prod.area?.Nombre || "Sin área"}</td>
                 <td>
-                  <button className="btn-editar" onClick={() => setProductoEditar(prod)}>
+                  <button
+                    className="btn-editar"
+                    onClick={() => setProductoEditar(prod)}
+                  >
                     <FaEdit />
                   </button>
-                  <button className="btn-eliminar" onClick={() => setProductoEliminar(prod)}>
+                  <button
+                    className="btn-eliminar"
+                    onClick={() => setProductoEliminar(prod)}
+                  >
                     <FaTrash />
                   </button>
                 </td>
@@ -189,7 +200,9 @@ const Productos: React.FC = () => {
         <EliminarProducto
           isOpen={!!productoEliminar}
           onClose={() => setProductoEliminar(null)}
-          onEliminar={() => handleEliminarProducto(productoEliminar.ID_Producto)}
+          onEliminar={() =>
+            handleEliminarProducto(productoEliminar.ID_Producto)
+          }
           producto={productoEliminar}
         />
       )}

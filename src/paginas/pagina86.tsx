@@ -53,7 +53,8 @@ const Pagina86: React.FC<Props> = ({ salones }) => {
                           : "#333",
                       fontWeight: prod.estado === 2 ? 600 : 400,
                       opacity: prod.habilitado === false ? 0.5 : 1,
-                      pointerEvents: prod.habilitado === false ? "none" : "auto",
+                      pointerEvents:
+                        prod.habilitado === false ? "none" : "auto",
                       cursor:
                         prod.habilitado === false ? "not-allowed" : "pointer",
                     }}

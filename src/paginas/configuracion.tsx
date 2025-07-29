@@ -1,13 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // ← Agrega esto
-import { FaEnvelope, FaUserShield, FaKey, FaUser, FaEdit } from 'react-icons/fa';
-import ModalCambiarCorreo from '../modales/modalcambiarcorreo';
-import ModalRecuperar from '../modales/modalrecuperar';
-import '../estilos/configuracion.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom"; // ← Agrega esto
+import {
+  FaEnvelope,
+  FaUserShield,
+  FaKey,
+  FaUser,
+  FaEdit,
+} from "react-icons/fa";
+import ModalCambiarCorreo from "../modales/modalcambiarcorreo";
+import ModalRecuperar from "../modales/modalrecuperar";
+import "../estilos/configuracion.css";
 
 const Configuracion: React.FC = () => {
-  const backendUrl = 'https://fiorisback.onrender.com';
+  const backendUrl = "https://fiorisback.onrender.com";
   const [usuario, setUsuario] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [modalCorreo, setModalCorreo] = useState(false);
@@ -16,19 +22,20 @@ const Configuracion: React.FC = () => {
   const navigate = useNavigate(); // ← Nuevo hook
 
   useEffect(() => {
-    axios.get(`${backendUrl}/usuario`, { withCredentials: true })
-      .then(res => setUsuario(res.data))
-      .catch(err => {
+    axios
+      .get(`${backendUrl}/usuario`, { withCredentials: true })
+      .then((res) => setUsuario(res.data))
+      .catch((err) => {
         console.error(err);
         setUsuario(null);
-        setError('Error al cargar el usuario. Verifica si estás logueado.');
+        setError("Error al cargar el usuario. Verifica si estás logueado.");
       })
       .finally(() => setCargandoUsuario(false));
   }, []);
 
   useEffect(() => {
     if (!cargandoUsuario && !usuario) {
-      navigate('/');
+      navigate("/");
     }
   }, [usuario, cargandoUsuario, navigate]);
 
@@ -41,43 +48,61 @@ const Configuracion: React.FC = () => {
       ) : usuario ? (
         <div className="datos-usuario">
           <div className="dato-item">
-            <label className="dato-label"><FaUser className="icono" /> Nombre:</label>
+            <label className="dato-label">
+              <FaUser className="icono" /> Nombre:
+            </label>
             <div className="dato-valor">{usuario.Nombre}</div>
           </div>
 
           <div className="dato-item">
-            <label className="dato-label"><FaEnvelope className="icono" /> Correo:</label>
+            <label className="dato-label">
+              <FaEnvelope className="icono" /> Correo:
+            </label>
             <div className="dato-valor-con-boton">
               <span>{usuario.Correo}</span>
-              <button className="boton-editar" onClick={() => setModalCorreo(true)}>
+              <button
+                className="boton-editar"
+                onClick={() => setModalCorreo(true)}
+              >
                 <FaEdit className="icono-boton" /> Editar correo
               </button>
             </div>
           </div>
 
           <div className="dato-item">
-            <label className="dato-label"><FaKey className="icono" /> Contraseña:</label>
+            <label className="dato-label">
+              <FaKey className="icono" /> Contraseña:
+            </label>
             <div className="dato-valor-con-boton">
               <span>********</span>
-              <button className="boton-editar" onClick={() => setModalClave(true)}>
+              <button
+                className="boton-editar"
+                onClick={() => setModalClave(true)}
+              >
                 <FaEdit className="icono-boton" /> Cambiar contraseña
               </button>
             </div>
           </div>
 
           <div className="dato-item">
-            <label className="dato-label"><FaUserShield className="icono" /> Rol:</label>
-            <div className="dato-valor rol-valor">
-              {usuario.rol?.Nombre}
-            </div>
+            <label className="dato-label">
+              <FaUserShield className="icono" /> Rol:
+            </label>
+            <div className="dato-valor rol-valor">{usuario.rol?.Nombre}</div>
           </div>
         </div>
       ) : (
         <p>Cargando usuario...</p>
       )}
 
-      <ModalCambiarCorreo isOpen={modalCorreo} onClose={() => setModalCorreo(false)} />
-      <ModalRecuperar isOpen={modalClave} onClose={() => setModalClave(false)} />
+      <ModalCambiarCorreo
+        isOpen={modalCorreo}
+        onClose={() => setModalCorreo(false)}
+      />
+      <ModalRecuperar
+        isOpen={modalClave}
+        onClose={() => setModalClave(false)}
+      />
     </div>
   );
 };

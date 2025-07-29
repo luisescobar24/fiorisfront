@@ -351,47 +351,47 @@
     gap: 0.75rem;
     padding: 0.75rem 1rem;
   }
-  
+
   .mozo-header h2 {
     font-size: 1.2rem;
     order: 1;
   }
-  
+
   .btn-ir-perfil {
     width: auto; /* <-- Cambia de 100% a auto */
     order: 2;
     padding: 0.75rem;
   }
-  
+
   .filtros-mozo {
     flex-direction: column;
     gap: 0.75rem;
     padding: 1rem;
   }
-  
+
   .filtros-mozo select {
     min-width: auto;
   }
-  
+
   .mozo-pedidos-scroll {
     grid-template-columns: 1fr;
     gap: 0.75rem;
     padding: 1rem;
     max-height: calc(100vh - 180px);
   }
-  
+
   .mozo-mesa {
     width: 100%;
     margin: 0 0 1rem 0;
     display: block;
   }
-  
+
   .modal-cliente {
     margin: 1rem;
     padding: 1.5rem;
     min-width: auto;
   }
-  
+
   .modal-cliente-btns {
     flex-direction: column;
   }
@@ -401,19 +401,19 @@
   .mozo-header {
     padding: 0.5rem;
   }
-  
+
   .mozo-header h2 {
     font-size: 1.1rem;
   }
-  
+
   .filtros-mozo {
     padding: 0.75rem;
   }
-  
+
   .mozo-pedidos-scroll {
     padding: 0.5rem;
   }
-  
+
   .modal-cliente {
     padding: 1rem;
   }
@@ -431,20 +431,28 @@
 }
 
 /* Fix para min-height y fondo */
-html, body, #root {
+html,
+body,
+#root {
   min-height: 100vh;
   background: #f4f6fb;
   scroll-behavior: smooth;
 }
 
 /* Mejora de accesibilidad: foco visible */
-button:focus, select:focus, input:focus {
+button:focus,
+select:focus,
+input:focus {
   outline: 2px solid #1976d2;
   outline-offset: 2px;
 }
 
 /* Transición suave para tarjetas y botones */
-.mozo-mesa, .btn-anadir-cliente, .btn-mostrar-cliente, .btn-guardar-cliente, .btn-cancelar-cliente {
+.mozo-mesa,
+.btn-anadir-cliente,
+.btn-mostrar-cliente,
+.btn-guardar-cliente,
+.btn-cancelar-cliente {
   transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
 }
 

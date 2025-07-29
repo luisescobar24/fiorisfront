@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import '../estilos/listasalones.css'; // Asegúrate que la ruta sea correcta
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import "../estilos/listasalones.css"; // Asegúrate que la ruta sea correcta
 
 interface Salon {
   ID_Salon: number;
@@ -13,7 +13,7 @@ const ListaSalones: React.FC = () => {
   const [salones, setSalones] = useState<Salon[]>([]);
   const [cargando, setCargando] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<{ Nombre: string }>({ Nombre: '' });
+  const [formData, setFormData] = useState<{ Nombre: string }>({ Nombre: "" });
   const [editId, setEditId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -33,12 +33,12 @@ const ListaSalones: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Seguro que deseas eliminar este salón?')) return;
+    if (!window.confirm("¿Seguro que deseas eliminar este salón?")) return;
     try {
       await axios.delete(`${backendUrl}/salones/${id}`);
       fetchSalones();
     } catch (error) {
-      alert('Error al eliminar salón');
+      alert("Error al eliminar salón");
     }
   };
 
@@ -50,7 +50,7 @@ const ListaSalones: React.FC = () => {
 
   const handleAdd = () => {
     setEditId(null);
-    setFormData({ Nombre: '' });
+    setFormData({ Nombre: "" });
     setShowForm(true);
   };
 
@@ -65,18 +65,19 @@ const ListaSalones: React.FC = () => {
       setShowForm(false);
       fetchSalones();
     } catch (error) {
-      alert('Error al guardar salón');
+      alert("Error al guardar salón");
     }
   };
 
-  if (cargando) return <div className="lista-salones-container">Cargando salones...</div>;
+  if (cargando)
+    return <div className="lista-salones-container">Cargando salones...</div>;
 
   return (
     <div className="lista-salones-container">
       <h2>Lista de Salones</h2>
       <button onClick={handleAdd}>Agregar Salón</button>
       {showForm && (
-        <form onSubmit={handleFormSubmit} style={{ margin: '1em 0' }}>
+        <form onSubmit={handleFormSubmit} style={{ margin: "1em 0" }}>
           <input
             type="text"
             placeholder="Nombre"
@@ -84,7 +85,9 @@ const ListaSalones: React.FC = () => {
             onChange={(e) => setFormData({ Nombre: e.target.value })}
             required
           />
-          <button type="submit">{editId ? 'Guardar Cambios' : 'Agregar'}</button>
+          <button type="submit">
+            {editId ? "Guardar Cambios" : "Agregar"}
+          </button>
           <button type="button" onClick={() => setShowForm(false)}>
             Cancelar
           </button>
@@ -105,7 +108,9 @@ const ListaSalones: React.FC = () => {
               <td>{salon.Nombre}</td>
               <td>
                 <button onClick={() => handleEdit(salon)}>Editar</button>
-                <button onClick={() => handleDelete(salon.ID_Salon)}>Eliminar</button>
+                <button onClick={() => handleDelete(salon.ID_Salon)}>
+                  Eliminar
+                </button>
               </td>
             </tr>
           ))}

@@ -43,7 +43,12 @@ export const AgregarProducto: React.FC<AgregarProductoProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (nombre.trim() === "" || precio === "" || idCategoria === "" || idArea === "") {
+    if (
+      nombre.trim() === "" ||
+      precio === "" ||
+      idCategoria === "" ||
+      idArea === ""
+    ) {
       alert("Por favor completa todos los campos.");
       return;
     }
@@ -86,7 +91,9 @@ export const AgregarProducto: React.FC<AgregarProductoProps> = ({
           <input
             type="number"
             value={precio}
-            onChange={(e) => setPrecio(e.target.value === "" ? "" : Number(e.target.value))}
+            onChange={(e) =>
+              setPrecio(e.target.value === "" ? "" : Number(e.target.value))
+            }
             placeholder="Precio"
             className="modal-input"
             min="0"
@@ -96,7 +103,11 @@ export const AgregarProducto: React.FC<AgregarProductoProps> = ({
 
           <select
             value={idCategoria}
-            onChange={(e) => setIdCategoria(e.target.value === "" ? "" : Number(e.target.value))}
+            onChange={(e) =>
+              setIdCategoria(
+                e.target.value === "" ? "" : Number(e.target.value)
+              )
+            }
             className="modal-input"
             required
           >
@@ -110,7 +121,9 @@ export const AgregarProducto: React.FC<AgregarProductoProps> = ({
 
           <select
             value={idArea}
-            onChange={(e) => setIdArea(e.target.value === "" ? "" : Number(e.target.value))}
+            onChange={(e) =>
+              setIdArea(e.target.value === "" ? "" : Number(e.target.value))
+            }
             className="modal-input"
             required
           >
@@ -123,7 +136,14 @@ export const AgregarProducto: React.FC<AgregarProductoProps> = ({
           </select>
 
           <div className="modal-actions">
-            <button type="button" onClick={() => { resetForm(); onClose(); }} className="btn-cancelar">
+            <button
+              type="button"
+              onClick={() => {
+                resetForm();
+                onClose();
+              }}
+              className="btn-cancelar"
+            >
               Cancelar
             </button>
             <button type="submit" className="btn-guardar">

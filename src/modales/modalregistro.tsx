@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import '../estilos/modalregistro.css';
+import { useState } from "react";
+import "../estilos/modalregistro.css";
 
 interface ModalRegistroProps {
   onClose: () => void;
@@ -8,54 +8,53 @@ interface ModalRegistroProps {
 export default function ModalRegistro({ onClose }: ModalRegistroProps) {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [step, setStep] = useState(1);
-  const [correo, setCorreo] = useState('');
-  const [codigo, setCodigo] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [confirmar, setConfirmar] = useState('');
+  const [correo, setCorreo] = useState("");
+  const [codigo, setCodigo] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [contrasena, setContrasena] = useState("");
+  const [confirmar, setConfirmar] = useState("");
 
   const handleNext = async () => {
     if (step === 1) {
       if (!nombre || !contrasena || !confirmar) {
-        alert('Completa todos los campos');
+        alert("Completa todos los campos");
         return;
       }
 
       if (contrasena !== confirmar) {
-        alert('Las contraseñas no coinciden');
+        alert("Las contraseñas no coinciden");
         return;
       }
 
       setStep(2);
-    }
-
-    else if (step === 2 && correo) {
+    } else if (step === 2 && correo) {
       try {
-        const response = await fetch(`${backendUrl}/solicitar-codigo-registro`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ correo }),
-        });
+        const response = await fetch(
+          `${backendUrl}/solicitar-codigo-registro`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ correo }),
+          }
+        );
 
         const data = await response.json();
 
         if (response.ok) {
-          alert('Código enviado a tu correo');
+          alert("Código enviado a tu correo");
           setStep(3);
         } else {
           alert(`Error al enviar código: ${data.error}`);
         }
       } catch (err) {
-        console.error('Error al enviar código:', err);
-        alert('Error al conectar con el servidor');
+        console.error("Error al enviar código:", err);
+        alert("Error al conectar con el servidor");
       }
-    }
-
-    else if (step === 3 && codigo) {
+    } else if (step === 3 && codigo) {
       try {
         const response = await fetch(`${backendUrl}/verificar-codigo`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ correo, codigo }),
         });
 
@@ -64,15 +63,15 @@ export default function ModalRegistro({ onClose }: ModalRegistroProps) {
         if (response.ok) {
           // Registro definitivo
           const registroRes = await fetch(`${backendUrl}/registro`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ correo, contrasena, nombre }),
           });
 
           const registroData = await registroRes.json();
 
           if (registroRes.ok) {
-            alert('Cuenta registrada con éxito');
+            alert("Cuenta registrada con éxito");
             onClose();
           } else {
             alert(`Error al registrar: ${registroData.error}`);
@@ -81,8 +80,8 @@ export default function ModalRegistro({ onClose }: ModalRegistroProps) {
           alert(`Código incorrecto: ${data.error}`);
         }
       } catch (err) {
-        console.error('Error en verificación:', err);
-        alert('Error al conectar con el servidor');
+        console.error("Error en verificación:", err);
+        alert("Error al conectar con el servidor");
       }
     }
   };
@@ -90,7 +89,9 @@ export default function ModalRegistro({ onClose }: ModalRegistroProps) {
   return (
     <div className="modal-overlay">
       <div className="modal-contenido">
-        <button className="btn-cerrar" onClick={onClose}>×</button>
+        <button className="btn-cerrar" onClick={onClose}>
+          ×
+        </button>
         <h2>Registro de Cuenta</h2>
 
         {step === 1 && (
@@ -141,7 +142,7 @@ export default function ModalRegistro({ onClose }: ModalRegistroProps) {
         )}
 
         <button onClick={handleNext}>
-          {step === 3 ? 'Finalizar Registro' : 'Siguiente'}
+          {step === 3 ? "Finalizar Registro" : "Siguiente"}
         </button>
       </div>
     </div>

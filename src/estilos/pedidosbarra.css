@@ -29,7 +29,7 @@
 }
 
 .pedido h3 {
-  margin: 0 0 0.25rem 0;  /* Menos espacio debajo del título */
+  margin: 0 0 0.25rem 0; /* Menos espacio debajo del título */
   font-size: 1rem;
   font-weight: 600;
   color: #1976d2;
@@ -38,20 +38,20 @@
 }
 
 .pedido p {
-  margin: 0.15rem 0;      /* Menos espacio vertical */
-  font-size: 0.85rem;     /* Fuente más compacta */
-  line-height: 1.2;       /* Menos alto */
+  margin: 0.15rem 0; /* Menos espacio vertical */
+  font-size: 0.85rem; /* Fuente más compacta */
+  line-height: 1.2; /* Menos alto */
   color: #555;
 }
 
 .pedido strong {
   color: #333;
   font-weight: 600;
-  margin-right: 4px;      /* Menos espacio horizontal */
+  margin-right: 4px; /* Menos espacio horizontal */
 }
 
 .pedido button {
-  margin-top: 0.5rem;     /* Menos espacio arriba del botón */
+  margin-top: 0.5rem; /* Menos espacio arriba del botón */
   background: linear-gradient(135deg, #4caf50, #45a049);
   color: white;
   border: none;
@@ -139,31 +139,31 @@
     gap: 0.75rem;
     max-height: calc(100vh - 70px);
   }
-  
+
   .pedido {
     min-height: 140px;
     padding: 0.75rem;
   }
-  
+
   .pedido h3 {
     font-size: 1rem;
   }
-  
+
   .pedido p {
     font-size: 0.85rem;
   }
-  
+
   .barra-header {
     flex-direction: column;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
   }
-  
+
   .barra-header h2 {
     font-size: 1.2rem;
     order: 1;
   }
-  
+
   .btn-ir-perfil {
     width: 100%;
     order: 2;
@@ -176,32 +176,32 @@
     padding: 0.25rem;
     gap: 0.5rem;
   }
-  
+
   .pedido {
     padding: 0.4rem;
     min-height: 100px;
   }
-  
+
   .pedido p {
     font-size: 0.8rem;
     margin: 0.1rem 0;
   }
-  
+
   .pedido h3 {
     font-size: 0.95rem;
     margin-bottom: 0.15rem;
     padding-bottom: 0.15rem;
   }
-  
+
   .pedido button {
     font-size: 0.8rem;
     padding: 0.4rem 0.6rem;
   }
-  
+
   .barra-header {
     padding: 0.5rem;
   }
-  
+
   .barra-header h2 {
     font-size: 1.1rem;
   }

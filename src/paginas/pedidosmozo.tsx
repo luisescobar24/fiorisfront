@@ -35,7 +35,11 @@ const PedidosMozo: React.FC = () => {
     documento: "",
     nombre: "",
   });
-  const [clienteActual, setClienteActual] = useState<{ nombre: string; documento: string; tipoDoc: string } | null>(null);
+  const [clienteActual, setClienteActual] = useState<{
+    nombre: string;
+    documento: string;
+    tipoDoc: string;
+  } | null>(null);
   const [mesaActual, setMesaActual] = useState<string | null>(null);
   const [clienteError, setClienteError] = useState<string | null>(null);
   const [guardandoCliente, setGuardandoCliente] = useState(false);
@@ -46,25 +50,29 @@ const PedidosMozo: React.FC = () => {
     fetch(`${import.meta.env.VITE_BACKEND_URL}/pedidos/agrupados`)
       .then((res) => res.json())
       .then((data) => {
-        const salones: Salon[] = Object.entries(data).map(([salon, mesasObj]) => ({
-          salon,
-          mesas: Object.entries(mesasObj as Record<string, any[]>).map(([numero, pedidosArr]) => ({
-            numero,
-            productos: pedidosArr.flatMap((pedido: any) =>
-              pedido.detalles.map((detalle: any) => ({
-                nombre: detalle.producto.Nombre,
-                estado: detalle.ID_Estado,
-              }))
+        const salones: Salon[] = Object.entries(data).map(
+          ([salon, mesasObj]) => ({
+            salon,
+            mesas: Object.entries(mesasObj as Record<string, any[]>).map(
+              ([numero, pedidosArr]) => ({
+                numero,
+                productos: pedidosArr.flatMap((pedido: any) =>
+                  pedido.detalles.map((detalle: any) => ({
+                    nombre: detalle.producto.Nombre,
+                    estado: detalle.ID_Estado,
+                  }))
+                ),
+                cliente: pedidosArr[0]?.cliente
+                  ? {
+                      nombre: pedidosArr[0].cliente.Nombre,
+                      documento: pedidosArr[0].cliente.Documento,
+                      tipoDoc: pedidosArr[0].cliente.TipoDoc,
+                    }
+                  : null,
+              })
             ),
-            cliente: pedidosArr[0]?.cliente
-              ? {
-                  nombre: pedidosArr[0].cliente.Nombre,
-                  documento: pedidosArr[0].cliente.Documento,
-                  tipoDoc: pedidosArr[0].cliente.TipoDoc,
-                }
-              : null,
-          })),
-        }));
+          })
+        );
         setPedidos(salones);
         setLoading(false);
       })
@@ -93,7 +101,9 @@ const PedidosMozo: React.FC = () => {
     setGuardandoCliente(true);
     setClienteError(null);
     try {
-      const pedidoRes = await fetch(`${import.meta.env.VITE_BACKEND_URL}/pedidos/por-mesa/${mesaActual}`);
+      const pedidoRes = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/pedidos/por-mesa/${mesaActual}`
+      );
       const pedido = await pedidoRes.json();
       if (!pedido || !pedido.ID_Pedido) {
         setClienteError("No se encontró pedido activo para esta mesa.");
@@ -101,20 +111,25 @@ const PedidosMozo: React.FC = () => {
         return;
       }
 
-      const resp = await fetch(`${import.meta.env.VITE_BACKEND_URL}/clientes/capturar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tipoDoc: clienteData.tipoDoc,
-          documento: clienteData.documento,
-          pedidoId: pedido.ID_Pedido,
-        }),
-      });
+      const resp = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/clientes/capturar`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tipoDoc: clienteData.tipoDoc,
+            documento: clienteData.documento,
+            pedidoId: pedido.ID_Pedido,
+          }),
+        }
+      );
 
       // Verifica si la respuesta es JSON antes de parsear
       const contentType = resp.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        setClienteError("Respuesta inesperada del servidor. Verifica el backend.");
+        setClienteError(
+          "Respuesta inesperada del servidor. Verifica el backend."
+        );
         setGuardandoCliente(false);
         return;
       }
@@ -143,7 +158,9 @@ const PedidosMozo: React.FC = () => {
   // Obtener salones y mesas únicos para los filtros
   const salonesUnicos = pedidos.map((s) => s.salon);
   const mesasUnicas = salonFiltro
-    ? pedidos.find((s) => s.salon === salonFiltro)?.mesas.map((m) => m.numero) || []
+    ? pedidos
+        .find((s) => s.salon === salonFiltro)
+        ?.mesas.map((m) => m.numero) || []
     : [];
 
   // Filtrar pedidos según los filtros seleccionados
@@ -158,10 +175,7 @@ const PedidosMozo: React.FC = () => {
   return (
     <div style={{ padding: 0 }}>
       <div className="mozo-header">
-        <button
-          className="btn-ir-perfil"
-          onClick={() => navigate("/perfil")}
-        >
+        <button className="btn-ir-perfil" onClick={() => navigate("/perfil")}>
           Regresar a Perfil
         </button>
         <h2>Pedidos Activos</h2>
@@ -230,7 +244,9 @@ const PedidosMozo: React.FC = () => {
                   ))}
                 </ul>
                 <button
-                  className={`btn-anadir-cliente ${mesa.cliente ? "actualizar" : "nuevo"}`}
+                  className={`btn-anadir-cliente ${
+                    mesa.cliente ? "actualizar" : "nuevo"
+                  }`}
                   onClick={() => {
                     setMesaActual(mesa.numero);
                     setModalOpen(true);
@@ -264,7 +280,9 @@ const PedidosMozo: React.FC = () => {
               Tipo de documento:
               <select
                 value={clienteData.tipoDoc}
-                onChange={e => setClienteData({ ...clienteData, tipoDoc: e.target.value })}
+                onChange={(e) =>
+                  setClienteData({ ...clienteData, tipoDoc: e.target.value })
+                }
               >
                 <option value="DNI">DNI</option>
                 <option value="RUC">RUC</option>
@@ -275,12 +293,16 @@ const PedidosMozo: React.FC = () => {
               <input
                 type="text"
                 value={clienteData.documento}
-                onChange={e => setClienteData({ ...clienteData, documento: e.target.value })}
+                onChange={(e) =>
+                  setClienteData({ ...clienteData, documento: e.target.value })
+                }
                 placeholder="Número de DNI o RUC"
               />
             </label>
             {clienteError && (
-              <div style={{ color: "red", marginBottom: 8 }}>{clienteError}</div>
+              <div style={{ color: "red", marginBottom: 8 }}>
+                {clienteError}
+              </div>
             )}
             <div className="modal-cliente-btns">
               <button
@@ -290,7 +312,10 @@ const PedidosMozo: React.FC = () => {
               >
                 {guardandoCliente ? "Guardando..." : "Guardar"}
               </button>
-              <button className="btn-cancelar-cliente" onClick={() => setModalOpen(false)}>
+              <button
+                className="btn-cancelar-cliente"
+                onClick={() => setModalOpen(false)}
+              >
                 Cancelar
               </button>
             </div>
@@ -303,9 +328,15 @@ const PedidosMozo: React.FC = () => {
         <div className="modal-bg">
           <div className="modal-cliente">
             <h3>Cliente de la mesa</h3>
-            <p><strong>Tipo Doc:</strong> {clienteActual.tipoDoc}</p>
-            <p><strong>Documento:</strong> {clienteActual.documento}</p>
-            <p><strong>Nombre:</strong> {clienteActual.nombre}</p>
+            <p>
+              <strong>Tipo Doc:</strong> {clienteActual.tipoDoc}
+            </p>
+            <p>
+              <strong>Documento:</strong> {clienteActual.documento}
+            </p>
+            <p>
+              <strong>Nombre:</strong> {clienteActual.nombre}
+            </p>
             <button
               className="btn-cancelar-cliente"
               onClick={() => setModalClienteOpen(false)}

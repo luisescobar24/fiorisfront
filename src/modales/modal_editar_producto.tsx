@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import Modal from 'react-modal';
-import '../estilos/modal_editar_producto.css'
+import React, { useState, useEffect } from "react";
+import Modal from "react-modal";
+import "../estilos/modal_editar_producto.css";
 
 interface Producto {
   id: number;
@@ -43,7 +43,7 @@ const EditarProducto: React.FC<EditarProductoProps> = ({
   categorias,
   areas,
 }) => {
-  const [nombre, setNombre] = useState('');
+  const [nombre, setNombre] = useState("");
   const [precio, setPrecio] = useState<number>(0);
   const [idCategoria, setIdCategoria] = useState<number>(0);
   const [idArea, setIdArea] = useState<number>(0);
@@ -60,7 +60,7 @@ const EditarProducto: React.FC<EditarProductoProps> = ({
 
   const handleEditar = () => {
     if (!nombre || precio <= 0 || !idCategoria || !idArea) {
-      alert('Por favor, completa todos los campos correctamente.');
+      alert("Por favor, completa todos los campos correctamente.");
       return;
     }
 
@@ -75,15 +75,13 @@ const EditarProducto: React.FC<EditarProductoProps> = ({
     onClose();
   };
 
-
-
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
       contentLabel="Editar Producto"
-      className="modal-contenido"         // 👈 debe coincidir con tu CSS
-      overlayClassName="modal-overlay"    // 👈 debe coincidir con tu CSS
+      className="modal-contenido" // 👈 debe coincidir con tu CSS
+      overlayClassName="modal-overlay" // 👈 debe coincidir con tu CSS
     >
       <h2>Editar Producto</h2>
       <form>
@@ -108,7 +106,9 @@ const EditarProducto: React.FC<EditarProductoProps> = ({
         >
           <option value={0}>Selecciona una categoría</option>
           {categorias.map((cat) => (
-            <option key={cat.ID_Categoria} value={cat.ID_Categoria}>{cat.Nombre}</option>
+            <option key={cat.ID_Categoria} value={cat.ID_Categoria}>
+              {cat.Nombre}
+            </option>
           ))}
         </select>
 
@@ -119,19 +119,20 @@ const EditarProducto: React.FC<EditarProductoProps> = ({
         >
           <option value={0}>Selecciona un área</option>
           {areas.map((area) => (
-            <option key={area.ID_Area} value={area.ID_Area}>{area.Nombre}</option>
+            <option key={area.ID_Area} value={area.ID_Area}>
+              {area.Nombre}
+            </option>
           ))}
         </select>
 
         <div className="botones">
-  <button type="button" className="btn-guardar" onClick={handleEditar}>
-    Guardar Cambios
-  </button>
-  <button type="button" className="btn-cancelar" onClick={onClose}>
-    Cancelar
-  </button>
-</div>
-
+          <button type="button" className="btn-guardar" onClick={handleEditar}>
+            Guardar Cambios
+          </button>
+          <button type="button" className="btn-cancelar" onClick={onClose}>
+            Cancelar
+          </button>
+        </div>
       </form>
     </Modal>
   );
