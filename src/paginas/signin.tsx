@@ -11,33 +11,29 @@ export default function SignIn() {
   >(null);
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
-  const backendUrl = "https://fiorisback.onrender.com";
-  console.log("URL del backend:", backendUrl);
   const navigate = useNavigate();
 
-  // Bloquea el scroll cuando un modal está abierto
+  const backendUrl = "https://fiorisback.onrender.com";
+
   useEffect(() => {
-    if (modalAbierto) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = modalAbierto ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [modalAbierto]);
 
-  // Permite cerrar el modal con Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && modalAbierto) setModalAbierto(null);
+      if (e.key === "Escape") setModalAbierto(null);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [modalAbierto]);
+  }, []);
 
-  const handleLogin = async () => {
-    // Validación básica
+  // ✅ NUEVO: Manejar el login dentro de un <form> con preventDefault
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault(); // ← Esto evita que Safari dispare un GET automáticamente
+
     if (!correo.trim() || !password.trim()) {
       alert("Por favor, completa todos los campos.");
       return;
@@ -46,18 +42,17 @@ export default function SignIn() {
     try {
       const response = await axios.post(
         `${backendUrl}/login`,
+        { correo, contrasena: password },
         {
-          correo,
-          contrasena: password,
-        },
-        {
-          withCredentials: true, // Muy importante para que se guarde la cookie httpOnly
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json", // ← FORZAR el tipo es clave para Safari
+          },
         }
       );
 
       const data = response.data;
 
-      // Validación de cuenta activa
       if (!data.activo) {
         alert(
           "Tu cuenta no está activa. Revisa tu correo o contacta al administrador."
@@ -65,13 +60,10 @@ export default function SignIn() {
         return;
       }
 
-      // Login exitoso
       navigate("/paginaprincipal");
     } catch (error: unknown) {
       console.error("Error en login:", error);
-
-      // Manejo de errores más detallado
-      let mensaje = "No se pudo iniciar sesión. Verifica tus datos o intenta más tarde.";
+      let mensaje = "No se pudo iniciar sesión. Intenta más tarde.";
       if (axios.isAxiosError(error) && error.response?.data?.mensaje) {
         mensaje = error.response.data.mensaje;
       }
@@ -83,25 +75,30 @@ export default function SignIn() {
     <div className="sign-in-container">
       <h1>Iniciar Sesión</h1>
 
-      <div className="input-group">
-        <input
-          type="email"
-          placeholder="Ingresa tu correo"
-          value={correo}
-          onChange={(e) => setCorreo(e.target.value)}
-        />
-      </div>
+      {/* ✅ Cambiado a un <form> para compatibilidad y control */}
+      <form onSubmit={handleLogin}>
+        <div className="input-group">
+          <input
+            type="email"
+            placeholder="Ingresa tu correo"
+            value={correo}
+            onChange={(e) => setCorreo(e.target.value)}
+            required
+          />
+        </div>
 
-      <div className="input-group">
-        <input
-          type="password"
-          placeholder="Ingresa tu contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
+        <div className="input-group">
+          <input
+            type="password"
+            placeholder="Ingresa tu contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
 
-      <button onClick={handleLogin}>Entrar</button>
+        <button type="submit">Entrar</button>
+      </form>
 
       <p>
         ¿No tienes cuenta?{" "}
@@ -112,6 +109,7 @@ export default function SignIn() {
           Crear una
         </button>
       </p>
+
       <p>
         ¿Olvidaste tu contraseña?{" "}
         <button
