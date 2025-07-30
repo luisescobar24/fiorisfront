@@ -67,13 +67,17 @@ const CountdownTimer: React.FC<{ fechaHora: string }> = ({ fechaHora }) => {
 
   const progress = (timeLeft / initialTime) * 100;
   const isExpired = timeLeft <= 0;
+  const isWarning = timeLeft <= 5 * 60 && timeLeft > 2 * 60; // 2–5 minutes
+  const isUrgent = timeLeft <= 2 * 60; // < 2 minutes
+
+  const timerClass = isExpired || isUrgent ? "timer-red" : isWarning ? "timer-yellow" : "timer-green";
 
   return (
-    <div className={`timer-container ${isExpired ? "tiempo-agotado" : ""}`}>
+    <div className={`timer-container ${timerClass}`}>
       <svg viewBox="0 0 36 36">
         <circle className="timer-circle-bg" cx="18" cy="18" r="16" />
         <circle
-          className={`timer-circle-progress ${isExpired ? "tiempo-agotado" : ""}`}
+          className={`timer-circle-progress ${timerClass}`}
           cx="18"
           cy="18"
           r="16"

@@ -297,7 +297,7 @@ html {
 }
 
 .volver-principal.destacado {
-  background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+  background: rgba(5, 150, 105, 0.1);
   color: var(--text-dark);
   font-weight: 600;
   border-radius: var(--border-radius);
@@ -794,12 +794,12 @@ html {
 
 .perfil-sidebar button[aria-current="page"],
 .nav-button[aria-current="page"] {
-  background: linear-gradient(135deg, var(--primary-green), var(--primary-green-hover));
+  background: rgba(86, 216, 175, 0.3);
   font-weight: 600;
 }
 
 .hamburger-btn[aria-expanded="true"] {
-  background: linear-gradient(135deg, var(--primary-blue-hover), var(--primary-blue));
+  background: rgba(5, 150, 105, 0.1);
 }
 
 /* PREVENT TEXT SELECTION */
