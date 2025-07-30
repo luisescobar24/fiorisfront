@@ -121,19 +121,21 @@ body.body-no-scroll {
 }
 
 .pedido {
-  background: var(--bg-white); /* White card */
-  color: var(--text-dark); /* Black text */
+  background: var(--bg-white);
+  color: var(--text-dark);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  padding: var(--spacing-lg);
+  padding:0; /* menos padding */
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: 1px; /* espacio más reducido entre items */
   transition: all var(--transition-fast);
-  box-shadow: 0 4px 16px var(--shadow-light);
+  box-shadow: 0 2px 8px var(--shadow-light); /* sombra más sutil */
   position: relative;
   z-index: 1;
+  min-height: 200px; /* más baja */
 }
+
 
 .pedido:hover {
   box-shadow: 0 6px 20px var(--shadow-medium);
@@ -429,28 +431,3 @@ body.body-no-scroll {
 .pedido:nth-child(2) { animation-delay: 0.2s; }
 .pedido:nth-child(3) { animation-delay: 0.3s; }
 .pedido:nth-child(4) { animation-delay: 0.4s; }
-
-/* DARK MODE */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-white: #ffffff; /* Force white background */
-    --bg-light: #f1f5f9;
-    --text-dark: #111827; /* Force black text */
-  }
-  body,
-  .pedidos-container,
-  .barra-header,
-  .pedidos-grid,
-  .pedido,
-  .pedido-vacio,
-  .pedido h3,
-  .pedido p,
-  .pedido p strong,
-  .timer-container {
-    background: var(--bg-white);
-    color: var(--text-dark);
-  }
-  .pedido button {
-    color: var(--bg-white);
-  }
-}
