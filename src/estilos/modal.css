@@ -1,7 +1,7 @@
 .perfil-container {
   width: 100vw;
   height: 100vh;
-  padding: 2rem;
+  padding: rem;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

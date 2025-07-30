@@ -29,43 +29,95 @@ interface Pedido {
   }[];
 }
 
-const PedidosBarra = () => {
-  const [detallesBarra, setDetallesBarra] = useState<any[]>([]);
-  const [, setServidos] = useState<{ [idDetalle: number]: number }>({});
+interface DetalleBarra {
+  ID_Detalle: number;
+  ID_Pedido: number;
+  Fecha_hora: string;
+  Mesa: string | number;
+  Salon: string;
+  Comentario: string;
+  producto: { Nombre: string };
+}
+
+const CountdownTimer: React.FC<{ fechaHora: string }> = ({ fechaHora }) => {
+  const initialTime = 15 * 60; // 15 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(initialTime);
+
+  useEffect(() => {
+    const startTime = new Date(fechaHora).getTime();
+    const endTime = startTime + initialTime * 1000;
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+      setTimeLeft(remaining);
+    };
+
+    updateTimer(); // Initial update
+    const interval = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(interval);
+  }, [fechaHora]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const secs = (seconds % 60).toString().padStart(2, "0");
+    return `${mins}:${secs}`;
+  };
+
+  const progress = (timeLeft / initialTime) * 100;
+  const isExpired = timeLeft <= 0;
+
+  return (
+    <div className={`timer-container ${isExpired ? "tiempo-agotado" : ""}`}>
+      <svg viewBox="0 0 36 36">
+        <circle className="timer-circle-bg" cx="18" cy="18" r="16" />
+        <circle
+          className={`timer-circle-progress ${isExpired ? "tiempo-agotado" : ""}`}
+          cx="18"
+          cy="18"
+          r="16"
+          strokeDasharray="100.53"
+          strokeDashoffset={100.53 * (1 - progress / 100)}
+          transform="rotate(-90 18 18)"
+        />
+      </svg>
+      <span>{isExpired ? "Tiempo agotado" : formatTime(timeLeft)}</span>
+    </div>
+  );
+};
+
+const PedidosBarra: React.FC = () => {
+  const [detallesBarra, setDetallesBarra] = useState<DetalleBarra[]>([]);
+  const [servidos, setServidos] = useState<{ [idDetalle: number]: number }>({});
   const navigate = useNavigate();
 
-  // Extrae la función para poder reutilizarla
   const fetchPedidos = useCallback(async () => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/pedidos/barra`,
-        { withCredentials: true }
-      );
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/pedidos/barra`, {
+        withCredentials: true,
+      });
 
-      const pedidosFiltrados = res.data.filter(
-        (pedido: Pedido) => pedido.ID_Estado === 1
-      );
+      const pedidosFiltrados = res.data.filter((pedido: Pedido) => pedido.ID_Estado === 1);
 
       const detalles = pedidosFiltrados.flatMap((pedido: Pedido) =>
         pedido.detalles
           .filter((detalle) => detalle.producto.area?.Nombre === "Barra")
           .flatMap((detalle) =>
             Array.from({ length: detalle.Cantidad }).map((_, unidadIdx) => ({
-              ...detalle,
+              ID_Detalle: detalle.ID_Detalle,
               ID_Pedido: pedido.ID_Pedido,
               Fecha_hora: pedido.Fecha_hora,
               Mesa: pedido.mesa?.Numero_mesa || "Sin mesa",
-              Salon: pedido.mesa?.salon?.Nombre || "Sin salón", // <--- AGREGA ESTA LÍNEA
-              Comentario:
-                detalle.Comentario?.split(";")[unidadIdx]?.trim() ||
-                detalle.Comentario ||
-                "Sin comentario",
+              Salon: pedido.mesa?.salon?.Nombre || "Sin salón",
+              Comentario: detalle.Comentario?.split(";")[unidadIdx]?.trim() || detalle.Comentario || "Sin comentario",
+              producto: { Nombre: detalle.producto.Nombre },
             }))
           )
       );
 
       setDetallesBarra(detalles);
-      setServidos({}); // Reinicia el conteo al recargar
+      setServidos({});
     } catch (error) {
       console.error("Error al obtener pedidos de barra:", error);
     }
@@ -79,7 +131,7 @@ const PedidosBarra = () => {
     });
 
     socket.on("nuevo-pedido", () => {
-      fetchPedidos(); // Refresca la lista cuando llega un nuevo pedido
+      fetchPedidos();
     });
 
     return () => {
@@ -87,7 +139,6 @@ const PedidosBarra = () => {
     };
   }, [fetchPedidos]);
 
-  // Cambiar estado de un detalle a 2 en la base de datos
   const marcarComoServido = async (idDetalle: number) => {
     try {
       await axios.put(
@@ -95,17 +146,13 @@ const PedidosBarra = () => {
         { estado: 2 },
         { withCredentials: true }
       );
-      // Elimina todas las unidades de ese detalle del frontend
-      setDetallesBarra((prev) =>
-        prev.filter((d) => d.ID_Detalle !== idDetalle)
-      );
+      setDetallesBarra((prev) => prev.filter((d) => d.ID_Detalle !== idDetalle));
     } catch (error) {
       alert("No se pudo actualizar el estado");
     }
   };
 
-  // Cuando se marca una unidad como servida
-  const handleServirUnidad = (detalle: any, idx: number) => {
+  const handleServirUnidad = (detalle: DetalleBarra, idx: number) => {
     setDetallesBarra((prev) => {
       const copia = [...prev];
       copia.splice(idx, 1);
@@ -117,10 +164,7 @@ const PedidosBarra = () => {
         ...prev,
         [detalle.ID_Detalle]: (prev[detalle.ID_Detalle] || 0) + 1,
       };
-      // Si ya se sirvieron todas las unidades, actualiza en la base de datos
-      const totalUnidades = detallesBarra.filter(
-        (d) => d.ID_Detalle === detalle.ID_Detalle
-      ).length;
+      const totalUnidades = detallesBarra.filter((d) => d.ID_Detalle === detalle.ID_Detalle).length;
       if (nuevo[detalle.ID_Detalle] === totalUnidades) {
         marcarComoServido(detalle.ID_Detalle);
       }
@@ -129,7 +173,7 @@ const PedidosBarra = () => {
   };
 
   return (
-    <div>
+    <div className="pedidos-container">
       <div className="barra-header">
         <button onClick={() => navigate("/perfil")} className="btn-ir-perfil">
           Ir a Perfil
@@ -137,37 +181,36 @@ const PedidosBarra = () => {
         <h2>Productos de Barra Activos</h2>
       </div>
       <div className="pedidos-grid">
-        {detallesBarra
-          .sort(
-            (a, b) =>
-              new Date(a.Fecha_hora).getTime() -
-              new Date(b.Fecha_hora).getTime()
-          )
-          .map((detalle, idx) => (
-            <div key={detalle.ID_Detalle + "-" + idx} className="pedido">
-              <h3>{detalle.producto.Nombre}</h3>
-              <p>
-                <strong>Mesa:</strong> {detalle.Mesa}
-              </p>
-              <p>
-                <strong>Salón:</strong> {detalle.Salon}
-              </p>
-              <p>
-                <strong>Fecha:</strong>{" "}
-                {new Date(detalle.Fecha_hora).toLocaleString()}
-              </p>
-              <p>
-                <strong>Comentario:</strong>{" "}
-                {detalle.Comentario || "Sin comentario"}
-              </p>
-              <button
-                style={{ marginTop: 8 }}
-                onClick={() => handleServirUnidad(detalle, idx)}
+        {detallesBarra.length === 0 ? (
+          <div className="pedido-vacio">
+            <span>No hay pedidos activos</span>
+          </div>
+        ) : (
+          detallesBarra
+            .sort((a, b) => new Date(a.Fecha_hora).getTime() - new Date(b.Fecha_hora).getTime())
+            .map((detalle, idx) => (
+              <div
+                key={`${detalle.ID_Detalle}-${idx}`}
+                className={`pedido ${new Date().getTime() - new Date(detalle.Fecha_hora).getTime() > 15 * 60 * 1000 ? "tiempo-agotado" : ""}`}
               >
-                Servido
-              </button>
-            </div>
-          ))}
+                <h3>{detalle.producto.Nombre}</h3>
+                <p>
+                  <strong>Mesa:</strong> {detalle.Mesa}
+                </p>
+                <p>
+                  <strong>Salón:</strong> {detalle.Salon}
+                </p>
+                <p>
+                  <strong>Fecha:</strong> {new Date(detalle.Fecha_hora).toLocaleString()}
+                </p>
+                <p>
+                  <strong>Comentario:</strong> {detalle.Comentario}
+                </p>
+                <CountdownTimer fechaHora={detalle.Fecha_hora} />
+                <button onClick={() => handleServirUnidad(detalle, idx)}>Servido</button>
+              </div>
+            ))
+        )}
       </div>
     </div>
   );
