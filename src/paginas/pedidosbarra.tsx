@@ -87,7 +87,19 @@ const PedidosBarra: React.FC = () => {
     socket.on("connect", () => {
       console.log("Conectado al servidor WebSocket");
     });
-socket.on("producto-servido", (data) => {
+
+    socket.on("nuevo-pedido", () => {
+      fetchPedidos();
+    });
+
+    socket.on("producto-servido", (data) => {
+      const { detalleId } = data;
+      setDetallesBarra((prev) =>
+        prev.filter((d) => d.ID_Detalle !== detalleId)
+      );
+    });
+
+    socket.on("producto-eliminado", (data) => {
   const { detalleId } = data;
   setDetallesBarra((prev) =>
     prev.filter((d) => d.ID_Detalle !== detalleId)
@@ -102,6 +114,7 @@ socket.on("producto-servido", (data) => {
 
     return () => {
       socket.off("nuevo-pedido");
+      socket.off("producto-eliminado");
       socket.off("producto-servido");
       socket.off("connect");
     };
@@ -173,7 +186,9 @@ socket.on("producto-servido", (data) => {
     }, [fechaHora]);
 
     const formatTime = (seconds: number) => {
-      const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
+      const mins = Math.floor(seconds / 60)
+        .toString()
+        .padStart(2, "0");
       const secs = (seconds % 60).toString().padStart(2, "0");
       return `${mins}:${secs}`;
     };

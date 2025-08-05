@@ -70,7 +70,6 @@ const PedidosMozo: React.FC = () => {
       const data = await res.json();
 
       const salones: Salon[] = Object.entries(data).map(
-        
         ([salon, mesasObj]) => ({
           salon,
           mesas: Object.entries(mesasObj as Record<string, any[]>).map(
@@ -156,7 +155,12 @@ const PedidosMozo: React.FC = () => {
         estado: number;
       }) => {
         console.log("Producto servido recibido:", data);
-        if (data.salon && data.mesa && data.detalleId !== undefined && data.estado !== undefined) {
+        if (
+          data.salon &&
+          data.mesa &&
+          data.detalleId !== undefined &&
+          data.estado !== undefined
+        ) {
           setPedidos((prevPedidos) =>
             prevPedidos.map((s) =>
               s.salon === data.salon
@@ -184,10 +188,23 @@ const PedidosMozo: React.FC = () => {
       }
     );
 
+    socket.on("producto-eliminado", ({ detalleId }) => {
+      setPedidos((prevPedidos) =>
+        prevPedidos.map((s) => ({
+          ...s,
+          mesas: s.mesas.map((m) => ({
+            ...m,
+            productos: m.productos.filter((p) => p.ID_Detalle !== detalleId),
+          })),
+        }))
+      );
+    });
+
     return () => {
       socket.off("connect");
       socket.off("nuevo-pedido");
       socket.off("producto-servido");
+      socket.off("producto-eliminado");
     };
   }, [fetchPedidos, updateProductoServido]);
 
@@ -213,8 +230,8 @@ const PedidosMozo: React.FC = () => {
       }
 
       // Busca el salón de la mesa actual
-      const mesaSalon = pedidos.find(salon =>
-        salon.mesas.some(m => m.numero === mesaActual)
+      const mesaSalon = pedidos.find((salon) =>
+        salon.mesas.some((m) => m.numero === mesaActual)
       );
       const salonNombre = mesaSalon?.salon ?? "";
 
@@ -256,8 +273,6 @@ const PedidosMozo: React.FC = () => {
       setGuardandoCliente(false);
     }
   };
-
-  
 
   // Memoize filtered orders to optimize performance
   const pedidosFiltrados = useMemo(
@@ -347,8 +362,38 @@ const PedidosMozo: React.FC = () => {
                       style={{ color: prod.estado === 2 ? "green" : "black" }}
                       className={prod.estado === 2 ? "producto-servido" : ""}
                     >
-                      {prod.estado === 2 && <span className="mozo-producto-check">✔️</span>}
-                      {prod.nombre} {prod.cantidad > 1 ? `x${prod.cantidad}` : ""}
+                      {prod.estado === 2 && (
+                        <span className="mozo-producto-check">✔️</span>
+                      )}
+                      {prod.nombre}{" "}
+                      {prod.cantidad > 1 ? `x${prod.cantidad}` : ""}
+                      <button
+                        className="btn-eliminar-producto"
+                        style={{ marginLeft: 8, color: "#e74c3c" }}
+                        onClick={async () => {
+                          if (window.confirm("¿Eliminar este producto?")) {
+                            try {
+                              const res = await fetch(
+                                `${import.meta.env.VITE_BACKEND_URL}/detalles/${
+                                  prod.ID_Detalle
+                                }`,
+                                { method: "DELETE", credentials: "include" }
+                              );
+                              const data = await res.json();
+                              if (!res.ok)
+                                throw new Error(
+                                  data.error ||
+                                    "No se pudo eliminar el producto"
+                                );
+                              // El producto será eliminado automáticamente por el evento socket
+                            } catch (err) {
+                              alert("Error al eliminar el producto.");
+                            }
+                          }
+                        }}
+                      >
+                        🗑️
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -366,7 +411,11 @@ const PedidosMozo: React.FC = () => {
                         nombre: mesa.cliente.nombre,
                       });
                     } else {
-                      setClienteData({ tipoDoc: "DNI", documento: "", nombre: "" });
+                      setClienteData({
+                        tipoDoc: "DNI",
+                        documento: "",
+                        nombre: "",
+                      });
                     }
                     setClienteError(null);
                     setModalOpen(true);
@@ -387,9 +436,17 @@ const PedidosMozo: React.FC = () => {
                 )}
                 <button
                   className="btn-eliminar-pedido"
-                  style={{ marginTop: "10px", background: "#e74c3c", color: "#fff" }}
+                  style={{
+                    marginTop: "10px",
+                    background: "#e74c3c",
+                    color: "#fff",
+                  }}
                   onClick={async () => {
-                    if (window.confirm("¿Seguro que deseas eliminar el pedido de esta mesa?")) {
+                    if (
+                      window.confirm(
+                        "¿Seguro que deseas eliminar el pedido de esta mesa?"
+                      )
+                    ) {
                       try {
                         // Elimina todos los pedidos de la mesa y salón
                         const res = await fetch(
@@ -405,7 +462,10 @@ const PedidosMozo: React.FC = () => {
                           }
                         );
                         const data = await res.json();
-                        if (!res.ok) throw new Error(data.error || "No se pudo eliminar el pedido");
+                        if (!res.ok)
+                          throw new Error(
+                            data.error || "No se pudo eliminar el pedido"
+                          );
                         await fetchPedidos();
                         alert("Pedido(s) eliminado(s) correctamente.");
                       } catch (err) {
@@ -461,7 +521,11 @@ const PedidosMozo: React.FC = () => {
                 onClick={guardarCliente}
                 disabled={!clienteData.documento || guardandoCliente}
               >
-                {guardandoCliente ? "Guardando..." : mesaActual && clienteData.documento ? "Actualizar" : "Añadir"}
+                {guardandoCliente
+                  ? "Guardando..."
+                  : mesaActual && clienteData.documento
+                  ? "Actualizar"
+                  : "Añadir"}
               </button>
               <button
                 className="btn-cancelar-cliente"

@@ -80,20 +80,27 @@ const PedidosPlancha = () => {
     socket.on("nuevo-pedido", () => {
       fetchPedidos();
     });
+    socket.on("producto-eliminado", (data) => {
+      const { detalleId } = data;
+      setDetallesPlancha((prev) =>
+        prev.filter((d) => d.ID_Detalle !== detalleId)
+      );
+    });
+    
 
     // Escuchar producto-servido para refrescar en tiempo real
     socket.on("producto-servido", (data) => {
-  const { detalleId } = data;
-  setDetallesPlancha((prev) =>
-    prev.filter((d) => d.ID_Detalle !== detalleId)
-  );
-});
-
+      const { detalleId } = data;
+      setDetallesPlancha((prev) =>
+        prev.filter((d) => d.ID_Detalle !== detalleId)
+      );
+    });
 
     return () => {
       socket.off("nuevo-pedido");
       socket.off("producto-servido");
       socket.off("connect");
+      socket.off("producto-eliminado");
     };
   }, [fetchPedidos]);
 
@@ -163,7 +170,9 @@ const PedidosPlancha = () => {
     }, [fechaHora]);
 
     const formatTime = (seconds: number) => {
-      const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
+      const mins = Math.floor(seconds / 60)
+        .toString()
+        .padStart(2, "0");
       const secs = (seconds % 60).toString().padStart(2, "0");
       return `${mins}:${secs}`;
     };

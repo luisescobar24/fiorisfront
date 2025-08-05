@@ -63,8 +63,8 @@ const Productos: React.FC = () => {
       await axios.put(`${backendUrl}/productos/${productoEditado.id}`, {
         nombre: productoEditado.nombre,
         precio: productoEditado.precio,
-        id_categoria: productoEditado.idCategoria,
-        id_area: productoEditado.idArea,
+        idCategoria: productoEditado.idCategoria,
+        idArea: productoEditado.idArea,
       });
       toast.success("Producto editado correctamente");
       await fetchData();
