@@ -87,10 +87,13 @@ const PedidosBarra: React.FC = () => {
     socket.on("connect", () => {
       console.log("Conectado al servidor WebSocket");
     });
+socket.on("producto-servido", (data) => {
+  const { detalleId } = data;
+  setDetallesBarra((prev) =>
+    prev.filter((d) => d.ID_Detalle !== detalleId)
+  );
+});
 
-    socket.on("nuevo-pedido", () => {
-      fetchPedidos();
-    });
 
     // Escuchar producto-servido para refrescar en tiempo real
     socket.on("producto-servido", () => {

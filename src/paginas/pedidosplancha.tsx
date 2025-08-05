@@ -82,9 +82,13 @@ const PedidosPlancha = () => {
     });
 
     // Escuchar producto-servido para refrescar en tiempo real
-    socket.on("producto-servido", () => {
-      fetchPedidos();
-    });
+    socket.on("producto-servido", (data) => {
+  const { detalleId } = data;
+  setDetallesPlancha((prev) =>
+    prev.filter((d) => d.ID_Detalle !== detalleId)
+  );
+});
+
 
     return () => {
       socket.off("nuevo-pedido");

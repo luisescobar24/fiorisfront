@@ -12,6 +12,7 @@ import "../estilos/pedidosmozo.css";
 interface Producto {
   id: number; // Added for unique identification
   productoId: number; // Added to match usage in code
+  ID_Detalle: number; // Added to match usage in code
   nombre: string;
   estado: number;
   cantidad: number;
@@ -77,8 +78,9 @@ const PedidosMozo: React.FC = () => {
               numero,
               productos: pedidosArr.flatMap((pedido: any) =>
                 pedido.detalles.map((detalle: any, index: number) => ({
-                  id: `${detalle.ID_Producto}-${pedido.ID_Pedido}-${index}`, // id único por detalle
-                  productoId: detalle.ID_Producto, // <-- agrega este campo
+                  id: `${detalle.ID_Producto}-${pedido.ID_Pedido}-${index}`,
+                  productoId: detalle.ID_Producto,
+                  ID_Detalle: detalle.ID_Detalle, // <-- agrega este campo
                   nombre: detalle.producto.Nombre,
                   estado: detalle.ID_Estado,
                   cantidad: 1,
@@ -150,16 +152,31 @@ const PedidosMozo: React.FC = () => {
       (data: {
         salon: string;
         mesa: string;
-        productoId: number;
+        detalleId: number;
         estado: number;
       }) => {
         console.log("Producto servido recibido:", data);
-        if (data.salon && data.mesa && data.productoId && data.estado) {
-          updateProductoServido(
-            data.salon,
-            data.mesa,
-            data.productoId,
-            data.estado
+        if (data.salon && data.mesa && data.detalleId !== undefined && data.estado !== undefined) {
+          setPedidos((prevPedidos) =>
+            prevPedidos.map((s) =>
+              s.salon === data.salon
+                ? {
+                    ...s,
+                    mesas: s.mesas.map((m) =>
+                      m.numero === data.mesa
+                        ? {
+                            ...m,
+                            productos: m.productos.map((p) =>
+                              p.ID_Detalle === data.detalleId
+                                ? { ...p, estado: data.estado }
+                                : p
+                            ),
+                          }
+                        : m
+                    ),
+                  }
+                : s
+            )
           );
         } else {
           console.error("Datos incompletos en producto-servido:", data);
