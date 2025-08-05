@@ -11,6 +11,7 @@ import "../estilos/pedidosmozo.css";
 
 interface Producto {
   id: number; // Added for unique identification
+  productoId: number; // Added to match usage in code
   nombre: string;
   estado: number;
   cantidad: number;
@@ -77,6 +78,7 @@ const PedidosMozo: React.FC = () => {
               productos: pedidosArr.flatMap((pedido: any) =>
                 pedido.detalles.map((detalle: any, index: number) => ({
                   id: `${detalle.ID_Producto}-${pedido.ID_Pedido}-${index}`, // id único por detalle
+                  productoId: detalle.ID_Producto, // <-- agrega este campo
                   nombre: detalle.producto.Nombre,
                   estado: detalle.ID_Estado,
                   cantidad: 1,
@@ -117,7 +119,7 @@ const PedidosMozo: React.FC = () => {
                     ? {
                         ...m,
                         productos: m.productos.map((p) =>
-                          p.id === productoId ? { ...p, estado } : p
+                          p.productoId === productoId ? { ...p, estado } : p
                         ),
                       }
                     : m
@@ -193,6 +195,12 @@ const PedidosMozo: React.FC = () => {
         throw new Error("No se encontró pedido activo para esta mesa.");
       }
 
+      // Busca el salón de la mesa actual
+      const mesaSalon = pedidos.find(salon =>
+        salon.mesas.some(m => m.numero === mesaActual)
+      );
+      const salonNombre = mesaSalon?.salon ?? "";
+
       const resp = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/clientes/capturar`,
         {
@@ -203,6 +211,8 @@ const PedidosMozo: React.FC = () => {
             tipoDoc: clienteData.tipoDoc,
             documento: clienteData.documento,
             pedidoId: pedido.ID_Pedido,
+            mesa: mesaActual,
+            salon: salonNombre, // <-- agrega esto
           }),
         }
       );
@@ -364,24 +374,23 @@ const PedidosMozo: React.FC = () => {
                   onClick={async () => {
                     if (window.confirm("¿Seguro que deseas eliminar el pedido de esta mesa?")) {
                       try {
-                        // Busca el pedido activo de la mesa
+                        // Elimina todos los pedidos de la mesa y salón
                         const res = await fetch(
-                          `${import.meta.env.VITE_BACKEND_URL}/pedidos/por-mesa/${mesa.numero}`,
-                          { credentials: "include" }
+                          `${import.meta.env.VITE_BACKEND_URL}/pedidos`,
+                          {
+                            method: "DELETE",
+                            credentials: "include",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              mesa: mesa.numero,
+                              salon: salon.salon,
+                            }),
+                          }
                         );
-                        const pedido = await res.json();
-                        if (!pedido || !pedido.ID_Pedido) {
-                          alert("No se encontró pedido activo para esta mesa.");
-                          return;
-                        }
-                        // Elimina el pedido
-                        const del = await fetch(
-                          `${import.meta.env.VITE_BACKEND_URL}/pedidos/${pedido.ID_Pedido}`,
-                          { method: "DELETE", credentials: "include" }
-                        );
-                        if (!del.ok) throw new Error("No se pudo eliminar el pedido");
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || "No se pudo eliminar el pedido");
                         await fetchPedidos();
-                        alert("Pedido eliminado correctamente.");
+                        alert("Pedido(s) eliminado(s) correctamente.");
                       } catch (err) {
                         alert("Error al eliminar el pedido.");
                       }

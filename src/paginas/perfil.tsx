@@ -262,7 +262,7 @@ const Perfil: React.FC = () => {
 
   const handleVistaChange = useCallback((vista: VistaActual) => {
     setVistaActual(vista);
-    setMenuAbierto(true);
+    setMenuAbierto(false); // <-- Oculta el menú al cambiar de vista
     const contenido = document.querySelector(".perfil-contenido");
     if (contenido) {
       contenido.scrollTo({ top: 0, behavior: "smooth" });

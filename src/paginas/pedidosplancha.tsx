@@ -81,8 +81,15 @@ const PedidosPlancha = () => {
       fetchPedidos();
     });
 
+    // Escuchar producto-servido para refrescar en tiempo real
+    socket.on("producto-servido", () => {
+      fetchPedidos();
+    });
+
     return () => {
       socket.off("nuevo-pedido");
+      socket.off("producto-servido");
+      socket.off("connect");
     };
   }, [fetchPedidos]);
 
