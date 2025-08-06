@@ -44,7 +44,6 @@ const PedidosMozo: React.FC = () => {
   const [clienteData, setClienteData] = useState({
     tipoDoc: "DNI",
     documento: "",
-    nombre: "",
   });
   const [clienteActual, setClienteActual] = useState<{
     nombre: string;
@@ -79,8 +78,8 @@ const PedidosMozo: React.FC = () => {
                 pedido.detalles.map((detalle: any, index: number) => ({
                   id: `${detalle.ID_Producto}-${pedido.ID_Pedido}-${index}`,
                   productoId: detalle.ID_Producto,
-                  ID_Detalle: detalle.ID_Detalle, // <-- agrega este campo
-                  nombre: detalle.producto.Nombre,
+                  ID_Detalle: detalle.ID_Detalle,
+                  nombre: detalle.producto ? detalle.producto.Nombre : "Producto eliminado",
                   estado: detalle.ID_Estado,
                   cantidad: 1,
                 }))
@@ -259,7 +258,7 @@ const PedidosMozo: React.FC = () => {
       // Espera a que fetchPedidos termine antes de cerrar el modal
       await fetchPedidos();
       setModalOpen(false);
-      setClienteData({ tipoDoc: "DNI", documento: "", nombre: "" });
+      setClienteData({ tipoDoc: "DNI", documento: "" });
       setMesaActual(null);
       alert("Cliente capturado y asociado correctamente.");
     } catch (err) {
@@ -408,13 +407,11 @@ const PedidosMozo: React.FC = () => {
                       setClienteData({
                         tipoDoc: mesa.cliente.tipoDoc,
                         documento: mesa.cliente.documento,
-                        nombre: mesa.cliente.nombre,
                       });
                     } else {
                       setClienteData({
                         tipoDoc: "DNI",
                         documento: "",
-                        nombre: "",
                       });
                     }
                     setClienteError(null);
@@ -506,9 +503,12 @@ const PedidosMozo: React.FC = () => {
               <input
                 type="text"
                 value={clienteData.documento}
-                onChange={(e) =>
-                  setClienteData({ ...clienteData, documento: e.target.value })
-                }
+                onChange={(e) => {
+                  const input = e.target.value;
+                  if (/^\d{0,11}$/.test(input)) {
+                    setClienteData({ ...clienteData, documento: input });
+                  }
+                }}
                 placeholder="Número de DNI o RUC"
               />
             </label>
@@ -531,7 +531,7 @@ const PedidosMozo: React.FC = () => {
                 className="btn-cancelar-cliente"
                 onClick={() => {
                   setModalOpen(false);
-                  setClienteData({ tipoDoc: "DNI", documento: "", nombre: "" });
+                  setClienteData({ tipoDoc: "DNI", documento: "" });
                   setClienteError(null);
                 }}
               >
