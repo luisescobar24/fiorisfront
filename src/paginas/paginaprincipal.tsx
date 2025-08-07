@@ -281,36 +281,43 @@ const PaginaPrincipal = () => {
     }
   }, [productos]);
 
-  const confirmarPedido = async () => {
-    if (carrito.length === 0) return;
-    try {
-      await axios.post(
-        `${backendUrl}/pedidos`,
-        {
-          Fecha_hora: new Date().toISOString(),
-          ID_Estado: 1,
-          ID_Mesa: mesaSeleccionada,
-          detalles: carrito.flatMap((item) =>
-            Array.from({ length: item.cantidad }).map((_, idx) => ({
-              Cantidad: 1,
-              Comentario: (item.comentarios[idx] ?? "").trim(),
-              ID_Estado: 1,
-              ID_Producto: item.producto.ID_Producto,
-            }))
-          ),
-        },
-        { withCredentials: true }
-      );
-
-      alert("✅ Pedido enviado con éxito");
-      setCarrito([]);
-      setCarritoAbierto(false);
-      sessionStorage.removeItem("carrito");
-    } catch (error) {
-      console.error("❌ Error al enviar pedido:", error);
-      alert("Error al enviar pedido");
-    }
+const confirmarPedido = async () => {
+  if (carrito.length === 0) return;
+  const pedidoParaEnviar = {
+    Fecha_hora: new Date().toISOString(),
+    ID_Estado: 1,
+    ID_Mesa: mesaSeleccionada,
+    detalles: carrito.flatMap((item) =>
+      Array.from({ length: item.cantidad }).map((_, idx) => ({
+        Cantidad: 1,
+        Comentario: (item.comentarios[idx] ?? "").trim(),
+        ID_Estado: 1,
+        ID_Producto: item.producto.ID_Producto,
+      }))
+    ),
   };
+
+  try {
+    // 1. Crear pedido en BD
+    await axios.post(`${backendUrl}/pedidos`, pedidoParaEnviar, {
+      withCredentials: true,
+    });
+
+    // 2. Enviar pedido a impresora
+    await axios.post(`${backendUrl}/imprimir-pedido`, pedidoParaEnviar, {
+      withCredentials: true,
+    });
+
+    alert("✅ Pedido enviado con éxito e impreso");
+    setCarrito([]);
+    setCarritoAbierto(false);
+    sessionStorage.removeItem("carrito");
+  } catch (error) {
+    console.error("❌ Error al enviar pedido:", error);
+    alert("Error al enviar pedido o imprimir");
+  }
+};
+
 
   const cancelarPedido = () => {
     setCarrito([]);
