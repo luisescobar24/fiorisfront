@@ -281,12 +281,17 @@ const PaginaPrincipal = () => {
     }
   }, [productos]);
 
+  const mesa = mesas.find(m => m.ID_Mesa === mesaSeleccionada);
+
 const confirmarPedido = async () => {
   if (carrito.length === 0) return;
   const pedidoParaEnviar = {
     Fecha_hora: new Date().toISOString(),
     ID_Estado: 1,
-    ID_Mesa: mesaSeleccionada,
+    Mesa: mesa?.Numero_mesa,
+    Salon: mesa?.salon?.Nombre,
+    ID_Usuario: usuario?.ID_Usuario,
+    Usuario: usuario?.Nombre,
     detalles: carrito.flatMap((item) =>
       Array.from({ length: item.cantidad }).map((_, idx) => ({
         Cantidad: 1,

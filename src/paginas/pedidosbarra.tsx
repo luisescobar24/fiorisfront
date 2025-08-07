@@ -44,42 +44,47 @@ const PedidosBarra: React.FC = () => {
   const [, setServidos] = useState<{ [idDetalle: number]: number }>({});
   const navigate = useNavigate();
 
-  const fetchPedidos = useCallback(async () => {
-    try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_BACKEND_URL}/pedidos/barra`,
-        { withCredentials: true }
-      );
+const fetchPedidos = useCallback(async () => {
+  try {
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}/pedidos/barra`,
+      { withCredentials: true }
+    );
 
-      const pedidosFiltrados = res.data.filter(
-        (pedido: Pedido) => pedido.ID_Estado === 1
-      );
+    const pedidosFiltrados = res.data.filter(
+      (pedido: Pedido) => pedido.ID_Estado === 1
+    );
 
-      const detalles = pedidosFiltrados.flatMap((pedido: Pedido) =>
-        pedido.detalles
-          .filter((detalle) => detalle.producto.area?.Nombre === "Barra")
-          .flatMap((detalle) =>
-            Array.from({ length: detalle.Cantidad }).map((_, unidadIdx) => ({
-              ID_Detalle: detalle.ID_Detalle,
-              ID_Pedido: pedido.ID_Pedido,
-              Fecha_hora: pedido.Fecha_hora,
-              Mesa: pedido.mesa?.Numero_mesa || "Sin mesa",
-              Salon: pedido.mesa?.salon?.Nombre || "Sin salón",
-              Comentario:
-                detalle.Comentario?.split(";")[unidadIdx]?.trim() ||
-                detalle.Comentario ||
-                "Sin comentario",
-              producto: { Nombre: detalle.producto.Nombre },
-            }))
-          )
-      );
+    const areasValidas = ["Barra", "Postres", "Panes"];
 
-      setDetallesBarra(detalles);
-      setServidos({});
-    } catch (error) {
-      console.error("Error al obtener pedidos de barra:", error);
-    }
-  }, []);
+    const detalles = pedidosFiltrados.flatMap((pedido: Pedido) =>
+      pedido.detalles
+        .filter((detalle) =>
+          areasValidas.includes(detalle.producto.area?.Nombre || "")
+        )
+        .flatMap((detalle) =>
+          Array.from({ length: detalle.Cantidad }).map((_, unidadIdx) => ({
+            ID_Detalle: detalle.ID_Detalle,
+            ID_Pedido: pedido.ID_Pedido,
+            Fecha_hora: pedido.Fecha_hora,
+            Mesa: pedido.mesa?.Numero_mesa || "Sin mesa",
+            Salon: pedido.mesa?.salon?.Nombre || "Sin salón",
+            Comentario:
+              detalle.Comentario?.split(";")[unidadIdx]?.trim() ||
+              detalle.Comentario ||
+              "Sin comentario",
+            producto: { Nombre: detalle.producto.Nombre },
+          }))
+        )
+    );
+
+    setDetallesBarra(detalles);
+    setServidos({});
+  } catch (error) {
+    console.error("Error al obtener pedidos de barra:", error);
+  }
+}, []);
+
 
   useEffect(() => {
     fetchPedidos();
