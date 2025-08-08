@@ -1,7 +1,7 @@
 import "../estilos/paginaprincipal.css";
 import { User, X } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import {useNavigate } from "react-router-dom";
 import axios from "axios";
 import { io } from "socket.io-client";
 
@@ -288,6 +288,7 @@ const confirmarPedido = async () => {
   const pedidoParaEnviar = {
     Fecha_hora: new Date().toISOString(),
     ID_Estado: 1,
+    ID_Mesa: mesaSeleccionada,
     Mesa: mesa?.Numero_mesa,
     Salon: mesa?.salon?.Nombre,
     ID_Usuario: usuario?.ID_Usuario,
