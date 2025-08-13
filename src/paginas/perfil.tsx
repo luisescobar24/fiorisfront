@@ -47,14 +47,7 @@ const LoadingSpinner: React.FC = () => (
   </div>
 );
 
-const UserAvatar: React.FC<{ nombre: string }> = ({ nombre }) => {
-  const inicial = nombre?.charAt(0)?.toUpperCase() || "U";
-  return (
-    <div className="user-avatar" aria-label={`Avatar de ${nombre}`}>
-      {inicial}
-    </div>
-  );
-};
+
 
 const NavButton: React.FC<{
   boton: Boton;
