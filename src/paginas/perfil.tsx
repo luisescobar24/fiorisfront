@@ -30,12 +30,14 @@ type VistaActual =
   | "categorias"
   | "areas";
 
+type Rol = "ADMIN" | "USER" | string;
+
 interface Boton {
   nombre: string;
   valor: VistaActual;
   icono: string;
   descripcion?: string;
-  restringido?: boolean;
+  rolesPermitidos: Rol[];
 }
 
 const LoadingSpinner: React.FC = () => (
@@ -58,8 +60,8 @@ const NavButton: React.FC<{
   boton: Boton;
   activo: boolean;
   onClick: () => void;
-  disabled?: boolean;
-}> = ({ boton, activo, onClick, disabled = false }) => (
+  disabled: boolean;
+}> = ({ boton, activo, onClick, disabled }) => (
   <button
     onClick={onClick}
     className={`nav-button ${activo ? "activo" : ""} ${disabled ? "disabled" : ""}`}
@@ -83,71 +85,69 @@ const Perfil: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const botonesBase: Boton[] = [
+  const botones: Boton[] = [
     {
       nombre: "Configuración",
       valor: "configuracion",
       icono: "⚙️",
       descripcion: "Ajusta tu perfil y preferencias",
-    },
-  ];
-
-  const botonesAdmin: Boton[] = [
-    {
-      nombre: "Productos",
-      valor: "productos",
-      icono: "📦",
-      descripcion: "Administra el catálogo de productos",
-      restringido: true,
-    },
-    {
-      nombre: "Estadísticas Generales",
-      valor: "estadisticas",
-      icono: "📊",
-      descripcion: "Consulta reportes y análisis",
-      restringido: true,
-    },
-    {
-      nombre: "Salones",
-      valor: "salones",
-      icono: "🏢",
-      descripcion: "Gestiona los salones del restaurante",
-      restringido: true,
-    },
-    {
-      nombre: "Mesas",
-      valor: "mesas",
-      icono: "🪑",
-      descripcion: "Organiza la distribución de mesas",
-      restringido: true,
-    },
-    {
-      nombre: "Categorías",
-      valor: "categorias",
-      icono: "📂",
-      descripcion: "Administra las categorías de productos",
-      restringido: true,
-    },
-    {
-      nombre: "Áreas",
-      valor: "areas",
-      icono: "🗺️",
-      descripcion: "Configura las áreas de trabajo",
-      restringido: true,
-    },
-    {
-      nombre: "Usuarios",
-      valor: "usuarios",
-      icono: "👥",
-      descripcion: "Gestiona los usuarios del sistema",
-      restringido: true,
+      rolesPermitidos: ["ADMIN", "USER"],
     },
     {
       nombre: "Página 86",
       valor: "pagina86",
       icono: "📄",
       descripcion: "Accede a la página especial",
-      restringido: true,
+      rolesPermitidos: ["ADMIN", "USER"],
+    },
+    {
+      nombre: "Productos",
+      valor: "productos",
+      icono: "📦",
+      descripcion: "Administra el catálogo de productos",
+      rolesPermitidos: ["ADMIN"],
+    },
+    {
+      nombre: "Estadísticas Generales",
+      valor: "estadisticas",
+      icono: "📊",
+      descripcion: "Consulta reportes y análisis",
+      rolesPermitidos: ["ADMIN"],
+    },
+    {
+      nombre: "Salones",
+      valor: "salones",
+      icono: "🏢",
+      descripcion: "Gestiona los salones del restaurante",
+      rolesPermitidos: ["ADMIN"],
+    },
+    {
+      nombre: "Mesas",
+      valor: "mesas",
+      icono: "🪑",
+      descripcion: "Organiza la distribución de mesas",
+      rolesPermitidos: ["ADMIN"],
+    },
+    {
+      nombre: "Categorías",
+      valor: "categorias",
+      icono: "📂",
+      descripcion: "Administra las categorías de productos",
+      rolesPermitidos: ["ADMIN"],
+    },
+    {
+      nombre: "Áreas",
+      valor: "areas",
+      icono: "🗺️",
+      descripcion: "Configura las áreas de trabajo",
+      rolesPermitidos: ["ADMIN"],
+    },
+    {
+      nombre: "Usuarios",
+      valor: "usuarios",
+      icono: "👥",
+      descripcion: "Gestiona los usuarios del sistema",
+      rolesPermitidos: ["ADMIN"],
     },
   ];
 
@@ -183,11 +183,10 @@ const Perfil: React.FC = () => {
   ];
 
   const botonesDisponibles = useMemo(() => {
-    const botones = [...botonesBase];
-    if (usuario?.rol?.Nombre === "ADMIN") {
-      botones.push(...botonesAdmin);
-    }
-    return botones;
+    const rolUsuario = usuario?.rol?.Nombre as Rol;
+    return botones.filter((boton) =>
+      boton.rolesPermitidos.includes(rolUsuario)
+    );
   }, [usuario?.rol?.Nombre]);
 
   const fetchUsuario = useCallback(async () => {
@@ -205,6 +204,7 @@ const Perfil: React.FC = () => {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           setError("Sesión expirada. Por favor, inicia sesión nuevamente.");
+          navigate("/");
         } else if (error.code === "ECONNABORTED") {
           setError("Tiempo de espera agotado. Verifica tu conexión.");
         } else {
@@ -217,7 +217,7 @@ const Perfil: React.FC = () => {
     } finally {
       setCargandoUsuario(false);
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     fetchUsuario();
@@ -238,17 +238,17 @@ const Perfil: React.FC = () => {
             setVistaActual("configuracion");
             break;
           case "2":
-            if (usuario?.rol?.Nombre === "ADMIN") {
+            if (botonesDisponibles.some((b) => b.valor === "productos")) {
               setVistaActual("productos");
             }
             break;
           case "3":
-            if (usuario?.rol?.Nombre === "ADMIN") {
+            if (botonesDisponibles.some((b) => b.valor === "estadisticas")) {
               setVistaActual("estadisticas");
             }
             break;
           case "m":
-            setMenuAbierto(!menuAbierto);
+            setMenuAbierto((prev) => !prev);
             break;
           case "h":
             navigate("/paginaprincipal");
@@ -258,16 +258,22 @@ const Perfil: React.FC = () => {
     };
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [usuario, menuAbierto, navigate]);
+  }, [botonesDisponibles, navigate]);
 
   const handleVistaChange = useCallback((vista: VistaActual) => {
+    const boton = botones.find((b) => b.valor === vista);
+    const rolUsuario = usuario?.rol?.Nombre as Rol;
+    if (!boton || !boton.rolesPermitidos.includes(rolUsuario)) {
+      return;
+    }
+
     setVistaActual(vista);
-    setMenuAbierto(false); // <-- Oculta el menú al cambiar de vista
+    setMenuAbierto(false);
     const contenido = document.querySelector(".perfil-contenido");
     if (contenido) {
       contenido.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, []);
+  }, [usuario?.rol?.Nombre, botones]);
 
   const handleNavegacion = useCallback(
     (ruta: string) => {
@@ -282,22 +288,6 @@ const Perfil: React.FC = () => {
   }, []);
 
   const renderContenido = useCallback(() => {
-    if (vistaActual !== "configuracion" && usuario?.rol?.Nombre !== "ADMIN") {
-      return (
-        <div className="error-container">
-          <div className="error-icon">🔒</div>
-          <h3>Acceso Denegado</h3>
-          <p>No tienes permisos para acceder a esta sección.</p>
-          <button
-            onClick={() => setVistaActual("configuracion")}
-            className="retry-button"
-          >
-            Volver a Configuración
-          </button>
-        </div>
-      );
-    }
-
     const componentes: { [key in VistaActual]: React.ReactNode } = {
       configuracion: <Configuracion />,
       productos: <Productos />,
@@ -311,7 +301,7 @@ const Perfil: React.FC = () => {
     };
 
     return componentes[vistaActual] || <div>Contenido no disponible</div>;
-  }, [vistaActual, usuario?.rol?.Nombre]);
+  }, [vistaActual]);
 
   if (cargandoUsuario) {
     return <LoadingSpinner />;
@@ -348,76 +338,90 @@ const Perfil: React.FC = () => {
 
   return (
     <div className="perfil-container">
-      <aside
-        className={`perfil-sidebar ${menuAbierto ? "abierto" : "cerrado"}`}
-        role="navigation"
-        aria-label="Menú de navegación principal"
-      >
+      <header className="perfil-header">
         <button
-          className="hamburger-btn"
+          className="menu-button"
           onClick={toggleMenu}
           aria-expanded={menuAbierto}
-          aria-controls="sidebar-content"
+          aria-controls="menu-dropdown"
           aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
         >
           <span className="menu-text">Menú</span>
-          <span className="hamburger-icon">{menuAbierto ? "✕" : "☰"}</span>
+          <span className="menu-icon">{menuAbierto ? "✕" : "☰"}</span>
         </button>
 
-        <div id="sidebar-content" className="sidebar-content" role="menu">
-          <div className="sidebar-header">
-            <UserAvatar nombre={usuario.Nombre} />
-            <div className="user-info">
-              <h3>{usuario.Nombre}</h3>
-              <p>{usuario.rol.Nombre}</p>
+        {menuAbierto && (
+          <>
+            <div 
+              className="menu-dropdown"
+              id="menu-dropdown"
+              role="menu"
+            >
+              <div className="menu-header">
+                <div className="user-info">
+                  <h3>{usuario.Nombre}</h3>
+                  <p>{usuario.rol.Nombre}</p>
+                </div>
+              </div>
+
+              <div className="menu-section">
+                <div className="menu-section-title">Navegación Rápida</div>
+                {botonesNavegacion.map((btn) => (
+                  <button
+                    key={btn.ruta}
+                    onClick={() => {
+                      handleNavegacion(btn.ruta);
+                      setMenuAbierto(false);
+                    }}
+                    className={btn.className}
+                    title={btn.descripcion}
+                    role="menuitem"
+                  >
+                    <span className="icon" role="img" aria-label={btn.nombre}>
+                      {btn.icono}
+                    </span>
+                    <span className="button-text">{btn.nombre}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="menu-section">
+                <div className="menu-section-title">Herramientas</div>
+                {botonesDisponibles.map((btn) => (
+                  <NavButton
+                    key={btn.valor}
+                    boton={btn}
+                    activo={vistaActual === btn.valor}
+                    onClick={() => {
+                      handleVistaChange(btn.valor);
+                      setMenuAbierto(false);
+                    }}
+                    disabled={false}
+                  />
+                ))}
+              </div>
+
+              <div className="menu-section">
+                <div className="menu-section-title">Atajos de Teclado</div>
+                <div className="keyboard-shortcuts">
+                  <small>
+                    <strong>Alt + M:</strong> Menú
+                    <br />
+                    <strong>Alt + H:</strong> Inicio
+                    <br />
+                    <strong>Alt + 1-3:</strong> Vistas
+                  </small>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div className="sidebar-section">
-            <div className="sidebar-section-title">Navegación Rápida</div>
-            {botonesNavegacion.map((btn) => (
-              <button
-                key={btn.ruta}
-                onClick={() => handleNavegacion(btn.ruta)}
-                className={btn.className}
-                title={btn.descripcion}
-                role="menuitem"
-              >
-                <span className="icon" role="img" aria-label={btn.nombre}>
-                  {btn.icono}
-                </span>
-                <span className="button-text">{btn.nombre}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="sidebar-section">
-            <div className="sidebar-section-title">Administración</div>
-            {botonesDisponibles.map((btn) => (
-              <NavButton
-                key={btn.valor}
-                boton={btn}
-                activo={vistaActual === btn.valor}
-                onClick={() => handleVistaChange(btn.valor)}
-                disabled={btn.restringido && usuario.rol.Nombre !== "ADMIN"}
-              />
-            ))}
-          </div>
-
-          <div className="sidebar-section">
-            <div className="sidebar-section-title">Atajos de Teclado</div>
-            <div className="keyboard-shortcuts">
-              <small>
-                <strong>Alt + M:</strong> Menú
-                <br />
-                <strong>Alt + H:</strong> Inicio
-                <br />
-                <strong>Alt + 1-3:</strong> Vistas
-              </small>
-            </div>
-          </div>
-        </div>
-      </aside>
+            <div 
+              className="menu-overlay"
+              onClick={() => setMenuAbierto(false)}
+              role="presentation"
+            />
+          </>
+        )}
+      </header>
 
       <main
         className="perfil-contenido"
@@ -434,22 +438,6 @@ const Perfil: React.FC = () => {
 
         <div className="content-wrapper">{renderContenido()}</div>
       </main>
-
-      {menuAbierto && (
-        <div
-          className="mobile-overlay"
-          onClick={() => setMenuAbierto(false)}
-          role="button"
-          tabIndex={0}
-          aria-label="Cerrar menú"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setMenuAbierto(false);
-            }
-          }}
-        />
-      )}
     </div>
   );
 };

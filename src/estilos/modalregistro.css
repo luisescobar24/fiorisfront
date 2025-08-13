@@ -10,20 +10,30 @@
   justify-content: center;
   align-items: center;
   z-index: 2000;
+  padding: 1rem;
+ overflow: hidden;
+ 
 }
 
 /* Contenedor del modal */
 .modal-contenido {
   background: #fff;
-  padding: 2rem;
+  padding: 2rem 2.5rem;
   border-radius: 15px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 400px;
+  width: 100%;
+  max-width: 400px; /* fijo o dinámico desde React */
+  height: auto; /* crecer según contenido */
+  max-height: none; /* para no superar alto viewport */
+  overflow: visible; /* sin scroll interno */
+  transition: max-width 0.3s ease, max-height 0.3s ease;
   text-align: center;
+  position: relative;
   animation: modalFadeIn 0.35s cubic-bezier(0.4, 1.7, 0.6, 0.97);
+  box-sizing: border-box;
 }
 
+/* Animación de entrada */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -35,14 +45,93 @@
   }
 }
 
+.modal-header {
+  display: flex;
+align-items: baseline;
+border-bottom: 0 !important;
+padding: 0 !important;
+    align-items: baseline !important;
+}
+
+/* Para centrar el título en el espacio disponible y evitar que el botón lo desplace */
+.modal-header h2 {
+  flex-grow: 1;
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+  text-align: center;
+  user-select: none;
+  line-height: 1.2; /* Ajusta para evitar que ocupe más espacio vertical del necesario */
+  display: flex;
+  align-items: center; /* Centrar contenido interno del h2 */
+  justify-content: center;
+}
+
+/* Botón cerrar, sin position absolute */
+.btn-cerrar {
+  font-size: 1.8rem !important;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  padding: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  cursor: pointer !important;
+  background: transparent !important;
+  border: none !important;
+  color: #888 !important;
+  transition: color 0.3s ease !important;
+  user-select: none !important;
+}
+
+.btn-cerrar:hover:not(:disabled) {
+  color: #444 !important;
+}
+
+.btn-cerrar:disabled {
+  cursor: not-allowed !important;
+  color: #bbb !important;
+}
+
 /* Título */
 .modal-contenido h2 {
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
   color: #333;
+  user-select: none;
 }
 
-/* Etiquetas e inputs */
+/* Barra de progreso */
+.barra-progreso {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+
+  user-select: none;
+}
+
+.barra-progreso .paso {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ccc;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  transition: background-color 0.3s ease;
+}
+
+.barra-progreso .paso.activo {
+  background: #4a90e2;
+  box-shadow: 0 0 8px rgba(74, 144, 226, 0.7);
+}
+
+/* Etiquetas */
 .modal-contenido label {
   display: block;
   text-align: left;
@@ -51,63 +140,111 @@
   color: #555;
 }
 
+/* Inputs */
 .modal-contenido input {
   width: 100%;
-  padding: 0.7rem;
+  padding: 0.7rem 0.9rem;
   margin-top: 0.3rem;
-  border: 1px solid #ccc;
+  border: 1.5px solid #ccc;
   border-radius: 10px;
   font-size: 1rem;
-  transition: border-color 0.2s;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
 }
 
-.modal-contenido input:focus {
+.modal-contenido input:focus:not(:disabled) {
   border-color: #4a90e2;
   outline: none;
+  box-shadow: 0 0 6px #4a90e2aa;
 }
 
-/* Botones */
+.modal-contenido input:disabled {
+  background: #f0f0f0;
+  cursor: not-allowed;
+}
+
+/* Errores */
+.error {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin-top: 0.2rem;
+  text-align: left;
+  user-select: none;
+}
+
+/* Mensajes éxito */
+.mensaje-exito {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+  user-select: none;
+  font-weight: 600;
+}
+
+/* Botones contenedor */
 .botones {
   display: flex;
   justify-content: space-between;
   margin-top: 2rem;
-  gap: 0.5rem;
+  gap: 0.7rem;
 }
 
-.botones button {
-  flex: 1;
-  padding: 0.7rem;
-  border: none;
-  border-radius: 10px;
-  background-color: #4a90e2;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+/* Botones: anulación explícita para evitar conflictos con .sign-in-container button */
+.modal-contenido .botones button {
+  flex: 1 !important;
+  width: auto !important;
+  max-width: none !important;
+  padding: 0.7rem 1rem !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background-color 0.3s ease, color 0.3s ease !important;
+  user-select: none !important;
+  background-color: initial !important;
+  color: initial !important;
+  box-sizing: border-box !important;
 }
 
-.botones button:hover {
-  background-color: #357abd;
+/* Botón "Anterior" */
+.modal-contenido .botones button:first-child {
+  background-color: #ccc !important;
+  color: #333 !important;
 }
 
-.botones button:last-child {
-  background-color: #ccc;
-  color: #333;
+.modal-contenido .botones button:first-child:hover:not(:disabled) {
+  background-color: #999 !important;
 }
 
-.botones button:last-child:hover {
-  background-color: #999;
+.modal-contenido .botones button:first-child:disabled {
+  cursor: not-allowed !important;
+  background-color: #eee !important;
+  color: #aaa !important;
 }
 
-/* Ajusta el nombre del archivo si tu modal usa otro CSS */
-.modal-registro {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2000;
-  background: #fff;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+/* Botón "Siguiente" o "Finalizar" */
+.modal-contenido .botones button:last-child {
+  background-color: #4a90e2 !important;
+  color: white !important;
+}
+
+.modal-contenido .botones button:last-child:hover:not(:disabled) {
+  background-color: #357abd !important;
+}
+
+.modal-contenido .botones button:last-child:disabled {
+  cursor: not-allowed !important;
+  background-color: #7ea7d9 !important;
+}
+
+/* Scroll interno en pantallas pequeñas */
+@media (max-height: 400px) {
+  .modal-contenido {
+    max-height: 90vh;
+    overflow-y: visible;
+  }
 }

@@ -98,3 +98,62 @@ form input[type="text"]:focus {
     width: 120px;
   }
 }
+
+/* MODAL CONFIRMACIÓN ELIMINACIÓN */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 1.8em 2em;
+  border-radius: 12px;
+
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.modal-content p {
+  margin-bottom: 1.2em;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.modal-content button {
+  margin: 0 0.6em;
+  padding: 0.5em 1.3em;
+  font-size: 1em;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.modal-content button:first-child {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.modal-content button:first-child:hover {
+  background-color: #b71c1c;
+}
+
+.modal-content button:last-child {
+  background-color: #bdbdbd;
+  color: #333;
+}
+
+.modal-content button:last-child:hover {
+  background-color: #9e9e9e;
+}

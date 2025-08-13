@@ -10,11 +10,19 @@ body,
   margin: 0;
   padding: 0;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-
+  overflow-y: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
+.error-message {
+  color: red;
+  margin: 0.5rem 0;
+  font-weight: 600;
+  text-align: center;
+}
+
 
 /* Contenedor principal del formulario */
 .sign-in-container {
@@ -31,7 +39,7 @@ body,
   width: 25% !important;
   min-width: 300px !important;
   max-width: 400px !important;
-  margin: 60px auto !important;
+  margin: 0 auto !important;
   padding: 32px 24px !important;
   background: #fff !important;
   border-radius: 12px !important;

@@ -11,6 +11,8 @@ export default function SignIn() {
   >(null);
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -30,23 +32,24 @@ export default function SignIn() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // ✅ NUEVO: Manejar el login dentro de un <form> con preventDefault
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // ← Esto evita que Safari dispare un GET automáticamente
+    e.preventDefault();
+    setError(null);
 
     if (!correo.trim() || !password.trim()) {
-      alert("Por favor, completa todos los campos.");
+      setError("Por favor, completa todos los campos.");
       return;
     }
 
     try {
+      setLoading(true);
       const response = await axios.post(
         `${backendUrl}/login`,
         { correo, contrasena: password },
         {
           withCredentials: true,
           headers: {
-            "Content-Type": "application/json", // ← FORZAR el tipo es clave para Safari
+            "Content-Type": "application/json",
           },
         }
       );
@@ -54,7 +57,7 @@ export default function SignIn() {
       const data = response.data;
 
       if (!data.activo) {
-        alert(
+        setError(
           "Tu cuenta no está activa. Revisa tu correo o contacta al administrador."
         );
         return;
@@ -64,10 +67,12 @@ export default function SignIn() {
     } catch (error: unknown) {
       console.error("Error en login:", error);
       let mensaje = "No se pudo iniciar sesión. Intenta más tarde.";
-      if (axios.isAxiosError(error) && error.response?.data?.mensaje) {
-        mensaje = error.response.data.mensaje;
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        mensaje = error.response.data.message;
       }
-      alert(mensaje);
+      setError(mensaje);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,7 +80,6 @@ export default function SignIn() {
     <div className="sign-in-container">
       <h1>Iniciar Sesión</h1>
 
-      {/* ✅ Cambiado a un <form> para compatibilidad y control */}
       <form onSubmit={handleLogin}>
         <div className="input-group">
           <input
@@ -97,7 +101,11 @@ export default function SignIn() {
           />
         </div>
 
-        <button type="submit">Entrar</button>
+        {error && <p className="error-message">{error}</p>}
+
+        <button type="submit" disabled={loading}>
+          {loading ? "Entrando..." : "Entrar"}
+        </button>
       </form>
 
       <p>

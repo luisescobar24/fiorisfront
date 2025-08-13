@@ -313,8 +313,8 @@ const confirmarPedido = async () => {
     await axios.post(`${backendUrl}/imprimir-pedido`, pedidoParaEnviar, {
       withCredentials: true,
     });
-
-    alert("✅ Pedido enviado con éxito e impreso");
+    // Apenas recibes respuesta, muestra el alert y limpia el carrito
+    alert("✅ Pedido enviado con éxito e impreso. Se imprimira en breve.");
     setCarrito([]);
     setCarritoAbierto(false);
     sessionStorage.removeItem("carrito");

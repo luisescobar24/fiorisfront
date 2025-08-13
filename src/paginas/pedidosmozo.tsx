@@ -79,7 +79,9 @@ const PedidosMozo: React.FC = () => {
                   id: `${detalle.ID_Producto}-${pedido.ID_Pedido}-${index}`,
                   productoId: detalle.ID_Producto,
                   ID_Detalle: detalle.ID_Detalle,
-                  nombre: detalle.producto ? detalle.producto.Nombre : "Producto eliminado",
+                  nombre: detalle.producto
+                    ? detalle.producto.Nombre
+                    : "Producto eliminado",
                   estado: detalle.ID_Estado,
                   cantidad: 1,
                 }))
@@ -306,7 +308,7 @@ const PedidosMozo: React.FC = () => {
         <button className="btn-ir-perfil" onClick={() => navigate("/perfil")}>
           Ir a Perfil
         </button>
-        <h2>Pedidos Activos</h2>
+        <h2 className="pedidos-activos">Pedidos Activos</h2>
       </div>
       <div className="filtros-mozo">
         <label>
@@ -505,7 +507,9 @@ const PedidosMozo: React.FC = () => {
                 value={clienteData.documento}
                 onChange={(e) => {
                   const input = e.target.value;
-                  if (/^\d{0,11}$/.test(input)) {
+                  const maxLength = clienteData.tipoDoc === "DNI" ? 8 : 11;
+                  // Solo números y longitud máxima según tipoDoc
+                  if (/^\d*$/.test(input) && input.length <= maxLength) {
                     setClienteData({ ...clienteData, documento: input });
                   }
                 }}
