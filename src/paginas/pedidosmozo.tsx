@@ -10,12 +10,13 @@ import { io } from "socket.io-client";
 import "../estilos/pedidosmozo.css";
 
 interface Producto {
-  id: number; // Added for unique identification
-  productoId: number; // Added to match usage in code
-  ID_Detalle: number; // Added to match usage in code
+  id: string;
+  productoId: number;
+  ID_Detalle: number;
   nombre: string;
   estado: number;
   cantidad: number;
+  detalleIds?: number[]; // <-- nuevo: ids contenidos si está agrupado
 }
 
 interface Mesa {
@@ -72,11 +73,11 @@ const PedidosMozo: React.FC = () => {
         ([salon, mesasObj]) => ({
           salon,
           mesas: Object.entries(mesasObj as Record<string, any[]>).map(
-            ([numero, pedidosArr]) => ({
-              numero,
-              productos: pedidosArr.flatMap((pedido: any) =>
+            ([numero, pedidosArr]) => {
+              // Agrupa productos por productoId y estado
+              const productosRaw = pedidosArr.flatMap((pedido: any) =>
                 pedido.detalles.map((detalle: any, index: number) => ({
-                  id: `${detalle.ID_Producto}-${pedido.ID_Pedido}-${index}`,
+                  id: `${detalle.ID_Producto}-${detalle.ID_Estado}-${pedido.ID_Pedido}-${index}`,
                   productoId: detalle.ID_Producto,
                   ID_Detalle: detalle.ID_Detalle,
                   nombre: detalle.producto
@@ -85,16 +86,23 @@ const PedidosMozo: React.FC = () => {
                   estado: detalle.ID_Estado,
                   cantidad: 1,
                 }))
-              ),
+              );
 
-              cliente: pedidosArr[0]?.cliente
-                ? {
-                    nombre: pedidosArr[0].cliente.Nombre,
-                    documento: pedidosArr[0].cliente.Documento,
-                    tipoDoc: pedidosArr[0].cliente.TipoDoc,
-                  }
-                : null,
-            })
+              // Agrupa usando la función unificada
+              const productos = agruparProductosCondicional(productosRaw);
+
+              return {
+                numero,
+                productos,
+                cliente: pedidosArr[0]?.cliente
+                  ? {
+                      nombre: pedidosArr[0].cliente.Nombre,
+                      documento: pedidosArr[0].cliente.Documento,
+                      tipoDoc: pedidosArr[0].cliente.TipoDoc,
+                    }
+                  : null,
+              };
+            }
           ),
         })
       );
@@ -108,26 +116,98 @@ const PedidosMozo: React.FC = () => {
     }
   }, []);
 
-  // Update product status locally without refetching
+  // --- Lógica de agrupación unificada ---
+  function agruparProductosCondicional(productos: Producto[]): Producto[] {
+    // agrupar por productoId
+    const grupos: Record<number, Producto[]> = {};
+    for (const p of productos) {
+      (grupos[p.productoId] ??= []).push({
+        ...p,
+        // nombre limpio por si venía con " xN"
+        nombre: p.nombre.split(' x')[0],
+        cantidad: 1,
+        detalleIds: [p.ID_Detalle],
+      });
+    }
+
+    const resultado: Producto[] = [];
+
+    for (const grupo of Object.values(grupos)) {
+      const todosServidos = grupo.every(p => p.estado === 2);
+      const todosPendientes = grupo.every(p => p.estado !== 2);
+
+      if (todosServidos || todosPendientes) {
+        // AGRUPADO
+        const base = grupo[0];
+        resultado.push({
+          ...base,
+          cantidad: grupo.length,
+          // nombre sin "xN", solo el texto
+          nombre: base.nombre,
+          // si todos pendientes, conserva 1; si todos servidos, 2
+          estado: todosServidos ? 2 : base.estado,
+          // id estable por producto y estado
+          id: `${base.productoId}-${todosServidos ? 2 : base.estado}`,
+          // juntar todos los detalles
+          detalleIds: grupo.flatMap(p => p.detalleIds ?? [p.ID_Detalle]),
+          // ojo: ID_Detalle queda simbólico; usaremos detalleIds para operar
+          ID_Detalle: base.ID_Detalle,
+        });
+      } else {
+        // MEZCLA → NO AGRUPAR: mostrar cada ítem
+        for (const p of grupo) {
+          resultado.push({
+            ...p,
+            cantidad: 1,
+            nombre: p.nombre, // limpio
+            id: `${p.productoId}-${p.estado}-${p.ID_Detalle}`,
+            detalleIds: [p.ID_Detalle],
+          });
+        }
+      }
+    }
+
+    return resultado;
+  }
+
+  // Update product status locally respetando agrupación y detalleIds
   const updateProductoServido = useCallback(
-    (salon: string, mesa: string, productoId: number, estado: number) => {
-      setPedidos((prevPedidos) =>
-        prevPedidos.map((s) =>
-          s.salon === salon
-            ? {
-                ...s,
-                mesas: s.mesas.map((m) =>
-                  m.numero === mesa
-                    ? {
-                        ...m,
-                        productos: m.productos.map((p) =>
-                          p.productoId === productoId ? { ...p, estado } : p
-                        ),
-                      }
-                    : m
+    (salon: string, mesa: string, nuevoEstado: number, detalleId: number) => {
+      setPedidos(prev =>
+        prev.map(s =>
+          s.salon !== salon ? s : {
+            ...s,
+            mesas: s.mesas.map(m =>
+              m.numero !== mesa ? m : {
+                ...m,
+                productos: agruparProductosCondicional(
+                  // 1) desagrupar selectivamente si el detalle está en un grupo
+                  m.productos.flatMap(p => {
+                    const contiene = (p.detalleIds ?? [p.ID_Detalle]).includes(detalleId);
+                    if (!contiene) return [p]; // no toca
+
+                    // desarmar el grupo a ítems individuales
+                    const ids = p.detalleIds ?? [p.ID_Detalle];
+                    return ids.map(idDet => ({
+                      ...p,
+                      id: `${p.productoId}-${p.estado}-${idDet}`,
+                      ID_Detalle: idDet,
+                      cantidad: 1,
+                      // nombre limpio
+                      nombre: p.nombre.split(' x')[0],
+                      detalleIds: [idDet],
+                    }));
+                  })
+                  // 2) actualizar el ítem exacto
+                  .map(p =>
+                    p.ID_Detalle === detalleId
+                      ? { ...p, estado: nuevoEstado }
+                      : p
+                  )
                 ),
               }
-            : s
+            ),
+          }
         )
       );
     },
@@ -152,6 +232,7 @@ const PedidosMozo: React.FC = () => {
       (data: {
         salon: string;
         mesa: string;
+        productoId: number;
         detalleId: number;
         estado: number;
       }) => {
@@ -162,27 +243,7 @@ const PedidosMozo: React.FC = () => {
           data.detalleId !== undefined &&
           data.estado !== undefined
         ) {
-          setPedidos((prevPedidos) =>
-            prevPedidos.map((s) =>
-              s.salon === data.salon
-                ? {
-                    ...s,
-                    mesas: s.mesas.map((m) =>
-                      m.numero === data.mesa
-                        ? {
-                            ...m,
-                            productos: m.productos.map((p) =>
-                              p.ID_Detalle === data.detalleId
-                                ? { ...p, estado: data.estado }
-                                : p
-                            ),
-                          }
-                        : m
-                    ),
-                  }
-                : s
-            )
-          );
+          updateProductoServido(data.salon, data.mesa, data.estado, data.detalleId);
         } else {
           console.error("Datos incompletos en producto-servido:", data);
         }

@@ -53,6 +53,7 @@ const PaginaPrincipal = () => {
   >(null);
   const [busqueda, setBusqueda] = useState("");
   const [carritoAbierto, setCarritoAbierto] = useState(false);
+  const [enviandoPedido, setEnviandoPedido] = useState(false);
   const [usuario, setUsuario] = useState<{
     ID_Usuario: number;
     Nombre: string;
@@ -284,7 +285,8 @@ const PaginaPrincipal = () => {
   const mesa = mesas.find(m => m.ID_Mesa === mesaSeleccionada);
 
 const confirmarPedido = async () => {
-  if (carrito.length === 0) return;
+  if (carrito.length === 0 || enviandoPedido) return;
+  setEnviandoPedido(true);
   const pedidoParaEnviar = {
     Fecha_hora: new Date().toISOString(),
     ID_Estado: 1,
@@ -321,6 +323,8 @@ const confirmarPedido = async () => {
   } catch (error) {
     console.error("❌ Error al enviar pedido:", error);
     alert("Error al enviar pedido o imprimir");
+  } finally {
+    setEnviandoPedido(false);
   }
 };
 
@@ -689,9 +693,9 @@ const confirmarPedido = async () => {
               <button
                 className="confirmar"
                 onClick={confirmarPedido}
-                disabled={carrito.length === 0}
+                disabled={carrito.length === 0 || enviandoPedido}
               >
-                Confirmar Pedido
+                {enviandoPedido ? "Enviando..." : "Confirmar Pedido"}
               </button>
               <button className="cancelar" onClick={cancelarPedido}>
                 Cancelar Pedido

@@ -125,7 +125,11 @@ const fetchPedidos = useCallback(async () => {
     };
   }, [fetchPedidos]);
 
+  const [sirviendo, setSirviendo] = useState<{ [id: number]: boolean }>({});
   const marcarComoServido = async (idDetalle: number) => {
+    if (sirviendo[idDetalle]) return; // Evita llamadas duplicadas
+    setSirviendo(prev => ({ ...prev, [idDetalle]: true }));
+    console.log("LLAMADA PUT", idDetalle);
     try {
       await axios.put(
         `${import.meta.env.VITE_BACKEND_URL}/detalles/${idDetalle}/estado`,
@@ -137,6 +141,8 @@ const fetchPedidos = useCallback(async () => {
       );
     } catch (error) {
       alert("No se pudo actualizar el estado");
+    } finally {
+      setSirviendo(prev => ({ ...prev, [idDetalle]: false }));
     }
   };
 
