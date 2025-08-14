@@ -108,7 +108,6 @@ const PedidosPlancha = () => {
   const marcarComoServido = async (idDetalle: number) => {
     if (sirviendo[idDetalle]) return; // Evita llamadas duplicadas
     setSirviendo(prev => ({ ...prev, [idDetalle]: true }));
-    console.log("LLAMADA PUT", idDetalle);
     try {
       await axios.put(
         `${import.meta.env.VITE_BACKEND_URL}/detalles/${idDetalle}/estado`,

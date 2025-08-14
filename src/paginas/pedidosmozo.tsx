@@ -223,7 +223,6 @@ const PedidosMozo: React.FC = () => {
     });
 
     socket.on("nuevo-pedido", () => {
-      console.log("Nuevo pedido recibido, refetching...");
       fetchPedidos(); // No muestra loading
     });
 
@@ -236,7 +235,6 @@ const PedidosMozo: React.FC = () => {
         detalleId: number;
         estado: number;
       }) => {
-        console.log("Producto servido recibido:", data);
         if (
           data.salon &&
           data.mesa &&
