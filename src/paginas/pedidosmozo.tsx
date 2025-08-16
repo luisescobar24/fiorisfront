@@ -8,6 +8,7 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import "../estilos/pedidosmozo.css";
+import ModalDetallePedido from "../modales/modal_detalle_pedido";
 
 interface Producto {
   id: string;
@@ -16,7 +17,7 @@ interface Producto {
   nombre: string;
   estado: number;
   cantidad: number;
-  detalleIds?: number[]; // <-- nuevo: ids contenidos si está agrupado
+  detalleIds?: number[];
 }
 
 interface Mesa {
@@ -40,20 +41,9 @@ const PedidosMozo: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [salonFiltro, setSalonFiltro] = useState<string>("");
   const [mesaFiltro, setMesaFiltro] = useState<string>("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalClienteOpen, setModalClienteOpen] = useState(false);
-  const [clienteData, setClienteData] = useState({
-    tipoDoc: "DNI",
-    documento: "",
-  });
-  const [clienteActual, setClienteActual] = useState<{
-    nombre: string;
-    documento: string;
-    tipoDoc: string;
-  } | null>(null);
-  const [mesaActual, setMesaActual] = useState<string | null>(null);
-  const [clienteError, setClienteError] = useState<string | null>(null);
-  const [guardandoCliente, setGuardandoCliente] = useState(false);
+
+  const [modalDetalleOpen, setModalDetalleOpen] = useState(false);
+  const [detalleMesa, setDetalleMesa] = useState<{ mesa: string; salon: string } | null>(null);
   const navigate = useNavigate();
 
   // Fetch initial orders from the backend
@@ -74,7 +64,6 @@ const PedidosMozo: React.FC = () => {
           salon,
           mesas: Object.entries(mesasObj as Record<string, any[]>).map(
             ([numero, pedidosArr]) => {
-              // Agrupa productos por productoId y estado
               const productosRaw = pedidosArr.flatMap((pedido: any) =>
                 pedido.detalles.map((detalle: any, index: number) => ({
                   id: `${detalle.ID_Producto}-${detalle.ID_Estado}-${pedido.ID_Pedido}-${index}`,
@@ -84,13 +73,13 @@ const PedidosMozo: React.FC = () => {
                     ? detalle.producto.Nombre
                     : "Producto eliminado",
                   estado: detalle.ID_Estado,
-                  cantidad: 1,
+                  // Use the real quantity from backend
+                  cantidad: detalle.Cantidad ?? 1,
+                  // detalleIds debe reflejar cada unidad pedida
+                  detalleIds: Array(detalle.Cantidad ?? 1).fill(detalle.ID_Detalle),
                 }))
               );
-
-              // Agrupa usando la función unificada
               const productos = agruparProductosCondicional(productosRaw);
-
               return {
                 numero,
                 productos,
@@ -109,123 +98,110 @@ const PedidosMozo: React.FC = () => {
       setPedidos(salones);
     } catch (error) {
       console.error("Error al obtener pedidos:", error);
-      setClienteError("Error al cargar los pedidos. Intenta de nuevo.");
     } finally {
       setLoading(false);
-      primeraCarga.current = false; // Marcar que ya no es la primera carga
+      primeraCarga.current = false;
     }
   }, []);
 
-  // --- Lógica de agrupación unificada ---
   function agruparProductosCondicional(productos: Producto[]): Producto[] {
-    // agrupar por productoId
-    const grupos: Record<number, Producto[]> = {};
+    // Agrupar por productoId y por estado, sumando cantidades y concatenando detalleIds.
+    const grupos: Record<
+      number,
+      Record<
+        number,
+        { nombre: string; cantidad: number; detalleIds: number[]; base?: Producto }
+      >
+    > = {};
+
     for (const p of productos) {
-      (grupos[p.productoId] ??= []).push({
-        ...p,
-        // nombre limpio por si venía con " xN"
-        nombre: p.nombre.split(' x')[0],
-        cantidad: 1,
-        detalleIds: [p.ID_Detalle],
-      });
+      const pid = p.productoId;
+      const est = p.estado ?? 0;
+      const cantidad = p.cantidad ?? 1;
+      const ids = p.detalleIds ?? [p.ID_Detalle];
+      const nombre = p.nombre.split(" x")[0];
+      grupos[pid] ??= {};
+      grupos[pid][est] ??= { nombre, cantidad: 0, detalleIds: [], base: p };
+      grupos[pid][est].cantidad += cantidad;
+      grupos[pid][est].detalleIds.push(...ids);
     }
 
     const resultado: Producto[] = [];
-
-    for (const grupo of Object.values(grupos)) {
-      const todosServidos = grupo.every(p => p.estado === 2);
-      const todosPendientes = grupo.every(p => p.estado !== 2);
-
-      if (todosServidos || todosPendientes) {
-        // AGRUPADO
-        const base = grupo[0];
+    for (const [pidStr, estados] of Object.entries(grupos)) {
+      for (const [estStr, info] of Object.entries(estados)) {
+        const estNum = Number(estStr);
+        const base = info.base!;
         resultado.push({
           ...base,
-          cantidad: grupo.length,
-          // nombre sin "xN", solo el texto
-          nombre: base.nombre,
-          // si todos pendientes, conserva 1; si todos servidos, 2
-          estado: todosServidos ? 2 : base.estado,
-          // id estable por producto y estado
-          id: `${base.productoId}-${todosServidos ? 2 : base.estado}`,
-          // juntar todos los detalles
-          detalleIds: grupo.flatMap(p => p.detalleIds ?? [p.ID_Detalle]),
-          // ojo: ID_Detalle queda simbólico; usaremos detalleIds para operar
+          productoId: Number(pidStr),
+          cantidad: info.cantidad,
+          nombre: base.nombre.split(" x")[0],
+          estado: estNum,
+          id: `${pidStr}-${estNum}`,
+          detalleIds: info.detalleIds,
           ID_Detalle: base.ID_Detalle,
         });
-      } else {
-        // MEZCLA → NO AGRUPAR: mostrar cada ítem
-        for (const p of grupo) {
-          resultado.push({
-            ...p,
-            cantidad: 1,
-            nombre: p.nombre, // limpio
-            id: `${p.productoId}-${p.estado}-${p.ID_Detalle}`,
-            detalleIds: [p.ID_Detalle],
-          });
-        }
       }
     }
 
     return resultado;
   }
 
-  // Update product status locally respetando agrupación y detalleIds
+  // Actualiza estado de producto servido
   const updateProductoServido = useCallback(
     (salon: string, mesa: string, nuevoEstado: number, detalleId: number) => {
-      setPedidos(prev =>
-        prev.map(s =>
-          s.salon !== salon ? s : {
-            ...s,
-            mesas: s.mesas.map(m =>
-              m.numero !== mesa ? m : {
-                ...m,
-                productos: agruparProductosCondicional(
-                  // 1) desagrupar selectivamente si el detalle está en un grupo
-                  m.productos.flatMap(p => {
-                    const contiene = (p.detalleIds ?? [p.ID_Detalle]).includes(detalleId);
-                    if (!contiene) return [p]; // no toca
-
-                    // desarmar el grupo a ítems individuales
-                    const ids = p.detalleIds ?? [p.ID_Detalle];
-                    return ids.map(idDet => ({
-                      ...p,
-                      id: `${p.productoId}-${p.estado}-${idDet}`,
-                      ID_Detalle: idDet,
-                      cantidad: 1,
-                      // nombre limpio
-                      nombre: p.nombre.split(' x')[0],
-                      detalleIds: [idDet],
-                    }));
-                  })
-                  // 2) actualizar el ítem exacto
-                  .map(p =>
-                    p.ID_Detalle === detalleId
-                      ? { ...p, estado: nuevoEstado }
-                      : p
-                  )
+      setPedidos((prev) =>
+        prev.map((s) =>
+          s.salon !== salon
+            ? s
+            : {
+                ...s,
+                mesas: s.mesas.map((m) =>
+                  m.numero !== mesa
+                    ? m
+                    : {
+                        ...m,
+                        productos: agruparProductosCondicional(
+                          m.productos
+                            .flatMap((p) => {
+                              const contiene = (
+                                p.detalleIds ?? [p.ID_Detalle]
+                              ).includes(detalleId);
+                              if (!contiene) return [p];
+                              const ids = p.detalleIds ?? [p.ID_Detalle];
+                              return ids.map((idDet) => ({
+                                ...p,
+                                id: `${p.productoId}-${p.estado}-${idDet}`,
+                                ID_Detalle: idDet,
+                                cantidad: 1,
+                                nombre: p.nombre.split(" x")[0],
+                                detalleIds: [idDet],
+                              }));
+                            })
+                            .map((p) =>
+                              p.ID_Detalle === detalleId
+                                ? { ...p, estado: nuevoEstado }
+                                : p
+                            )
+                        ),
+                      }
                 ),
               }
-            ),
-          }
         )
       );
     },
     []
   );
 
-  // Set up WebSocket listeners
+  // WebSocket listeners
   useEffect(() => {
-    fetchPedidos(true); // Solo la primera vez muestra loading
-
+    fetchPedidos(true);
     socket.on("connect", () => {
       console.log("Conectado al servidor WebSocket");
     });
-
     socket.on("nuevo-pedido", () => {
-      fetchPedidos(); // No muestra loading
+      fetchPedidos();
     });
-
     socket.on(
       "producto-servido",
       (data: {
@@ -241,13 +217,17 @@ const PedidosMozo: React.FC = () => {
           data.detalleId !== undefined &&
           data.estado !== undefined
         ) {
-          updateProductoServido(data.salon, data.mesa, data.estado, data.detalleId);
+          updateProductoServido(
+            data.salon,
+            data.mesa,
+            data.estado,
+            data.detalleId
+          );
         } else {
           console.error("Datos incompletos en producto-servido:", data);
         }
       }
     );
-
     socket.on("producto-eliminado", ({ detalleId }) => {
       setPedidos((prevPedidos) =>
         prevPedidos.map((s) => ({
@@ -259,7 +239,6 @@ const PedidosMozo: React.FC = () => {
         }))
       );
     });
-
     return () => {
       socket.off("connect");
       socket.off("nuevo-pedido");
@@ -268,73 +247,27 @@ const PedidosMozo: React.FC = () => {
     };
   }, [fetchPedidos, updateProductoServido]);
 
-  // Save or update client data
-  const guardarCliente = async () => {
-    if (!mesaActual || !clienteData.documento) {
-      setClienteError("Por favor, completa todos los campos requeridos.");
-      return;
-    }
+  // Guardar o actualizar cliente
 
-    setGuardandoCliente(true);
-    setClienteError(null);
-    try {
-      const pedidoRes = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/pedidos/por-mesa/${mesaActual}`,
-        { credentials: "include" }
-      );
-      if (!pedidoRes.ok)
-        throw new Error("No se encontró pedido activo para esta mesa.");
-      const pedido = await pedidoRes.json();
-      if (!pedido || !pedido.ID_Pedido) {
-        throw new Error("No se encontró pedido activo para esta mesa.");
+  // Eliminar producto desde el modal detalle y refrescar
+  const handleEliminarProducto = async (idDetalle: number) => {
+    if (window.confirm("¿Eliminar este producto?")) {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/detalles/${idDetalle}`,
+          { method: "DELETE", credentials: "include" }
+        );
+        const data = await res.json();
+        if (!res.ok)
+          throw new Error(data.error || "No se pudo eliminar el producto");
+        await fetchPedidos();
+      } catch (err) {
+        alert("Error al eliminar el producto.");
       }
-
-      // Busca el salón de la mesa actual
-      const mesaSalon = pedidos.find((salon) =>
-        salon.mesas.some((m) => m.numero === mesaActual)
-      );
-      const salonNombre = mesaSalon?.salon ?? "";
-
-      const resp = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/clientes/capturar`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            tipoDoc: clienteData.tipoDoc,
-            documento: clienteData.documento,
-            pedidoId: pedido.ID_Pedido,
-            mesa: mesaActual,
-            salon: salonNombre, // <-- agrega esto
-          }),
-        }
-      );
-
-      if (!resp.ok) {
-        const data = await resp.json();
-        throw new Error(data.error || "Error al capturar el cliente.");
-      }
-
-      // Espera a que fetchPedidos termine antes de cerrar el modal
-      await fetchPedidos();
-      setModalOpen(false);
-      setClienteData({ tipoDoc: "DNI", documento: "" });
-      setMesaActual(null);
-      alert("Cliente capturado y asociado correctamente.");
-    } catch (err) {
-      setClienteError(
-        err instanceof Error
-          ? err.message
-          : "Error al conectar con el servidor."
-      );
-      console.error("Error al guardar cliente:", err);
-    } finally {
-      setGuardandoCliente(false);
     }
   };
 
-  // Memoize filtered orders to optimize performance
+  // Memoize filtered orders
   const pedidosFiltrados = useMemo(
     () =>
       pedidos
@@ -364,149 +297,133 @@ const PedidosMozo: React.FC = () => {
   return (
     <div className="pedidos-container">
       <div className="mozo-header">
-        <button className="btn-ir-perfil" onClick={() => navigate("/perfil")}>
-          Ir a Perfil
-        </button>
-        <h2 className="pedidos-activos">Pedidos Activos</h2>
+      <button
+        className="btn-ir-perfil"
+        onClick={() => navigate("/perfil")}
+      >
+        Ir a Perfil
+      </button>
+      <h2 className="pedidos-activos">Pedidos Activos</h2>
       </div>
       <div className="filtros-mozo">
-        <label>
-          Salón:
-          <select
-            value={salonFiltro}
-            onChange={(e) => {
-              setSalonFiltro(e.target.value);
-              setMesaFiltro("");
-            }}
-          >
-            <option value="">Todos</option>
-            {salonesUnicos.map((salon) => (
-              <option key={salon} value={salon}>
-                {salon}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Mesa:
-          <select
-            value={mesaFiltro}
-            onChange={(e) => setMesaFiltro(e.target.value)}
-            disabled={!salonFiltro}
-          >
-            <option value="">Todas</option>
-            {mesasUnicas.map((mesa) => (
-              <option key={mesa} value={mesa}>
-                {mesa}
-              </option>
-            ))}
-          </select>
-        </label>
+      <label>
+        Salón:
+        <select
+        value={salonFiltro}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+          setSalonFiltro(e.target.value);
+          setMesaFiltro("");
+        }}
+        >
+        <option value="">Todos</option>
+        {salonesUnicos.map((salon: string) => (
+          <option key={salon} value={salon}>
+          {salon}
+          </option>
+        ))}
+        </select>
+      </label>
+      <label>
+        Mesa:
+        <select
+        value={mesaFiltro}
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setMesaFiltro(e.target.value)}
+        disabled={!salonFiltro}
+        >
+        <option value="">Todas</option>
+        {mesasUnicas.map((mesa: string) => (
+          <option key={mesa} value={mesa}>
+          {mesa}
+          </option>
+        ))}
+        </select>
+      </label>
       </div>
       <div className="pedidos-grid">
-        {pedidosFiltrados.length === 0 ? (
-          <div className="pedido-vacio">
-            <span>No hay pedidos activos</span>
-          </div>
-        ) : (
-          pedidosFiltrados.map((salon) =>
-            salon.mesas.map((mesa) => (
-              <div key={`${salon.salon}-${mesa.numero}`} className="mozo-mesa">
-                <h3>
-                  Mesa {mesa.numero} - {salon.salon}
-                </h3>
-                <ul>
-                  {mesa.productos.map((prod) => (
-                    <li
-                      key={prod.id}
-                      style={{ color: prod.estado === 2 ? "green" : "black" }}
-                      className={prod.estado === 2 ? "producto-servido" : ""}
-                    >
-                      {prod.estado === 2 && (
-                        <span className="mozo-producto-check">✔️</span>
-                      )}
-                      {prod.nombre}{" "}
-                      {prod.cantidad > 1 ? `x${prod.cantidad}` : ""}
-                      <button
-                        className="btn-eliminar-producto"
-                        style={{ marginLeft: 8, color: "#e74c3c" }}
-                        onClick={async () => {
-                          if (window.confirm("¿Eliminar este producto?")) {
-                            try {
-                              const res = await fetch(
-                                `${import.meta.env.VITE_BACKEND_URL}/detalles/${
-                                  prod.ID_Detalle
-                                }`,
-                                { method: "DELETE", credentials: "include" }
-                              );
-                              const data = await res.json();
-                              if (!res.ok)
-                                throw new Error(
-                                  data.error ||
-                                    "No se pudo eliminar el producto"
-                                );
-                              // El producto será eliminado automáticamente por el evento socket
-                            } catch (err) {
-                              alert("Error al eliminar el producto.");
-                            }
-                          }
-                        }}
-                      >
-                        🗑️
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  className={`btn-anadir-cliente ${
-                    mesa.cliente ? "actualizar" : "nuevo"
-                  }`}
-                  onClick={async () => {
-                    setMesaActual(mesa.numero);
-                    // Si hay cliente, muestra sus datos
-                    if (mesa.cliente) {
-                      setClienteData({
-                        tipoDoc: mesa.cliente.tipoDoc,
-                        documento: mesa.cliente.documento,
-                      });
-                    } else {
-                      setClienteData({
-                        tipoDoc: "DNI",
-                        documento: "",
-                      });
+      {pedidosFiltrados.length === 0 ? (
+        <div className="pedido-vacio">
+        <span>No hay pedidos activos</span>
+        </div>
+      ) : (
+        pedidosFiltrados.map((salon: Salon) =>
+          salon.mesas.map((mesa: Mesa) => (
+            <div key={`${salon.salon}-${mesa.numero}`} className="mozo-mesa">
+              <h3>
+                Mesa {mesa.numero} - {salon.salon}
+              </h3>
+              <ul>
+                {(() => {
+                  const grupos: Record<
+                    number,
+                    {
+                      nombre: string;
+                      estados: Record<number, { cantidad: number; detalleIds: number[] }>;
+                      total: number;
                     }
-                    setClienteError(null);
-                    setModalOpen(true);
+                  > = {};
+                  for (const p of mesa.productos) {
+                    const pid = p.productoId;
+                    const est = p.estado ?? 0;
+                    const nombre = p.nombre.split(" x")[0];
+                    if (!grupos[pid]) {
+                      grupos[pid] = { nombre, estados: {}, total: 0 };
+                    }
+                    grupos[pid].estados[est] = grupos[pid].estados[est] ?? { cantidad: 0, detalleIds: [] };
+                    grupos[pid].estados[est].cantidad += p.cantidad ?? 1;
+                    grupos[pid].estados[est].detalleIds.push(...(p.detalleIds ?? [p.ID_Detalle]));
+                    grupos[pid].total += p.cantidad ?? 1;
+                  }
+
+                  return Object.entries(grupos).map(([pid, g]) => (
+                    <li
+                      key={pid}
+                      style={{ color: (g.estados[2]?.cantidad ?? 0) === g.total ? "green" : "black" }}
+                      className={(g.estados[2]?.cantidad ?? 0) === g.total ? "producto-servido" : ""}
+                    >
+                      {g.nombre} {g.total > 1 ? `x${g.total}` : ""}
+                      <span style={{ marginLeft: 8 }}>
+                        {Object.entries(g.estados).map(([estStr, info]) => {
+                          const estNum = Number(estStr);
+                          return (
+                            <span
+                              key={estStr}
+                              className={`estado-badge estado-${estNum}`}
+                              style={{
+                                display: "inline-block",
+                                marginLeft: 6,
+                                padding: "2px 6px",
+                                borderRadius: 12,
+                                background: estNum === 2 ? "#d4f7dc" : "#eee",
+                                color: estNum === 2 ? "#1b6b2f" : "#333",
+                                fontSize: 12,
+                              }}
+                              title={`Estado ${estNum}: ${info.cantidad}`}
+                            >
+                              {info.cantidad}
+                              {estNum === 2 ? " ✓" : ""}
+                            </span>
+                          );
+                        })}
+                      </span>
+                    </li>
+                  ));
+                })()}
+              </ul>
+              <div className="mesa-botones">
+                <button
+                  className="btn-detalle-pedido"
+                  onClick={() => {
+                    setDetalleMesa({ mesa: mesa.numero, salon: salon.salon });
+                    setModalDetalleOpen(true);
                   }}
                 >
-                  {mesa.cliente ? "Actualizar Cliente" : "Añadir Cliente"}
+                  Detalle
                 </button>
-                {mesa.cliente && (
-                  <button
-                    className="btn-mostrar-cliente"
-                    onClick={() => {
-                      setClienteActual(mesa.cliente ?? null);
-                      setModalClienteOpen(true);
-                    }}
-                  >
-                    Mostrar Cliente
-                  </button>
-                )}
                 <button
                   className="btn-eliminar-pedido"
-                  style={{
-                    marginTop: "10px",
-                    background: "#e74c3c",
-                    color: "#fff",
-                  }}
                   onClick={async () => {
-                    if (
-                      window.confirm(
-                        "¿Seguro que deseas eliminar el pedido de esta mesa?"
-                      )
-                    ) {
+                    if (window.confirm("¿Seguro que deseas eliminar el pedido de esta mesa?")) {
                       try {
-                        // Elimina todos los pedidos de la mesa y salón
                         const res = await fetch(
                           `${import.meta.env.VITE_BACKEND_URL}/pedidos`,
                           {
@@ -520,10 +437,7 @@ const PedidosMozo: React.FC = () => {
                           }
                         );
                         const data = await res.json();
-                        if (!res.ok)
-                          throw new Error(
-                            data.error || "No se pudo eliminar el pedido"
-                          );
+                        if (!res.ok) throw new Error(data.error || "No se pudo eliminar el pedido");
                         await fetchPedidos();
                         alert("Pedido(s) eliminado(s) correctamente.");
                       } catch (err) {
@@ -532,104 +446,32 @@ const PedidosMozo: React.FC = () => {
                     }
                   }}
                 >
-                  Eliminar Pedido
+                  Borrar Pedido
                 </button>
               </div>
-            ))
-          )
-        )}
-      </div>
-
-      {modalOpen && (
-        <div className="modal-bg">
-          <div className="modal-cliente">
-            <h3>
-              {mesaActual && clienteData.documento ? "Actualizar" : "Añadir"}{" "}
-              Cliente a Mesa {mesaActual}
-            </h3>
-            <label>
-              Tipo de documento:
-              <select
-                value={clienteData.tipoDoc}
-                onChange={(e) =>
-                  setClienteData({ ...clienteData, tipoDoc: e.target.value })
-                }
-              >
-                <option value="DNI">DNI</option>
-                <option value="RUC">RUC</option>
-              </select>
-            </label>
-            <label>
-              Número:
-              <input
-                type="text"
-                value={clienteData.documento}
-                onChange={(e) => {
-                  const input = e.target.value;
-                  const maxLength = clienteData.tipoDoc === "DNI" ? 8 : 11;
-                  // Solo números y longitud máxima según tipoDoc
-                  if (/^\d*$/.test(input) && input.length <= maxLength) {
-                    setClienteData({ ...clienteData, documento: input });
-                  }
-                }}
-                placeholder="Número de DNI o RUC"
-              />
-            </label>
-            {clienteError && (
-              <div className="error-message">{clienteError}</div>
-            )}
-            <div className="modal-cliente-btns">
-              <button
-                className="btn-guardar-cliente"
-                onClick={guardarCliente}
-                disabled={!clienteData.documento || guardandoCliente}
-              >
-                {guardandoCliente
-                  ? "Guardando..."
-                  : mesaActual && clienteData.documento
-                  ? "Actualizar"
-                  : "Añadir"}
-              </button>
-              <button
-                className="btn-cancelar-cliente"
-                onClick={() => {
-                  setModalOpen(false);
-                  setClienteData({ tipoDoc: "DNI", documento: "" });
-                  setClienteError(null);
-                }}
-              >
-                Cancelar
-              </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {modalClienteOpen && clienteActual && (
-        <div className="modal-bg">
-          <div className="modal-cliente">
-            <h3>Cliente de la Mesa {mesaActual}</h3>
-            <p>
-              <strong>Tipo Doc:</strong> {clienteActual.tipoDoc}
-            </p>
-            <p>
-              <strong>Documento:</strong> {clienteActual.documento}
-            </p>
-            <p>
-              <strong>Nombre:</strong>{" "}
-              {clienteActual.nombre || "No especificado"}
-            </p>
-            <button
-              className="btn-cancelar-cliente"
-              onClick={() => setModalClienteOpen(false)}
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
+          ))
+        )
       )}
     </div>
-  );
+
+    {/* Modal de Detalle */}
+    {modalDetalleOpen && detalleMesa && (
+      <ModalDetallePedido
+        mesa={detalleMesa.mesa}
+        salon={detalleMesa.salon}
+        open={modalDetalleOpen}
+        onEliminarProducto={handleEliminarProducto}
+        onPreCuenta={() => {}}
+        onCancelar={() => setModalDetalleOpen(false)}
+        onGuardarCambios={async () => {
+          setModalDetalleOpen(false);
+          await fetchPedidos();
+        }}
+      />
+    )}
+  </div>
+);
 };
 
 export default PedidosMozo;

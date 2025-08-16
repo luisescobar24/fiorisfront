@@ -1,0 +1,378 @@
+:root {
+  --modal-bg: #ffffff;
+  --modal-overlay-bg: rgba(17, 25, 40, 0.8);
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --color-primary: #6366f1;
+  --color-success: #10b981;
+  --color-danger: #f43f5e;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --border-radius: 12px;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-detalle-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay-bg);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-sm);
+}
+
+.modal-detalle {
+  background: var(--modal-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: modalFadeIn 0.3s ease;
+}
+
+.modal-detalle-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 80vh;
+}
+
+.modal-detalle-left {
+  flex: 1;
+  background: #f8fafc;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  overflow-y: auto;
+  padding: var(--spacing-md);
+}
+
+.modal-detalle-left h3 {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: var(--spacing-lg);
+  margin: 0;
+  background: linear-gradient(to right, #f8fafc, #f1f5f9);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.modal-detalle-left ul {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-md) 0;
+}
+
+.modal-detalle-producto {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.modal-detalle-producto:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.producto-nombre {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.producto-comentario {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.btn-eliminar {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: linear-gradient(135deg, var(--color-danger) 0%, #e11d48 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.btn-eliminar:hover {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  transform: translateY(-1px);
+}
+
+.modal-detalle-right {
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.buscar-cliente {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: nowrap; /* Evita que los elementos se envuelvan */
+}
+
+.buscar-cliente input {
+  min-width: 0; /* Permite que el input se encoja si es necesario */
+  flex: 1;
+  padding: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  transition: var(--transition);
+}
+
+.buscar-cliente input:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+}
+
+.btn-buscar {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: linear-gradient(135deg, var(--color-success) 0%, #059669 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+  flex-shrink: 0; /* Evita que el botón se encoja */
+  white-space: nowrap; /* Evita que el texto del botón se envuelva */
+}
+
+.btn-buscar:hover {
+  background: #059669;
+}
+
+.nombre-cliente {
+  padding: var(--spacing-md);
+  background: linear-gradient(to right, #f0f9ff, #e0f2fe);
+  border: 1px solid rgba(186, 230, 253, 0.4);
+  border-radius: var(--border-radius);
+}
+
+.nombre-cliente span {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.btn-precuenta {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #4f46e5 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.btn-precuenta:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: rgba(241, 245, 249, 0.8);
+  backdrop-filter: blur(4px);
+  justify-content: flex-end;
+}
+
+.btn-cancelar {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.btn-cancelar:hover {
+  background: #e5e7eb;
+}
+
+.btn-guardar {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: linear-gradient(135deg, var(--color-success) 0%, #059669 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.btn-guardar:hover {
+  background: #059669;
+}
+
+/* Agregar animaciones */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Agregar efectos hover mejorados */
+button {
+  position: relative;
+  overflow: hidden;
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+button:active::after {
+  width: 200px;
+  height: 200px;
+  opacity: 0;
+}
+
+@media (min-width: 768px) {
+  .modal-detalle-content {
+    flex-direction: row;
+  }
+  
+  .modal-detalle-left {
+    border-bottom: none;
+    border-right: 1px solid var(--border-color);
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-detalle {
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  .modal-detalle-left {
+    padding: var(--spacing-sm);
+  }
+
+  .modal-detalle-left h3 {
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-lg);
+  }
+
+  .modal-detalle-producto {
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .buscar-cliente {
+    flex-direction: row; /* Mantiene la dirección horizontal */
+    width: 100%;
+  }
+
+  .buscar-cliente input {
+    padding: 8px;
+    font-size: var(--font-size-sm);
+  }
+
+  .btn-buscar {
+    padding: 8px 16px; /* Ajusta el padding para que sea más compacto */
+    font-size: var(--font-size-sm);
+  }
+  
+  .btn-eliminar,
+  .btn-cancelar,
+  .btn-guardar {
+    padding: 8px var(--spacing-md);
+    font-size: var(--font-size-sm);
+    min-height: 36px;
+  }
+
+  .btn-precuenta {
+    padding: 10px var(--spacing-md);
+    font-size: var(--font-size-base);
+    min-height: 40px;
+  }
+
+  .modal-actions {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+    flex-direction: row; /* Cambiado a row para botones lado a lado */
+  }
+  
+  .modal-actions button {
+    flex: 1; /* Los botones comparten el espacio disponible */
+  }
+
+  .nombre-cliente {
+    padding: var(--spacing-sm);
+  }
+
+  .nombre-cliente span {
+    font-size: var(--font-size-base);
+  }
+
+  .modal-detalle-right {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none;
+  }
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
