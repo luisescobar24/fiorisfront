@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Evita que los bots indexen rutas internas de React (si usas algo tipo /static/, /assets/, etc.)
+Disallow: /static/
+Disallow: /assets/
+
+# Indica tu sitemap (si no tienes, lo puedes generar más adelante)
+Sitemap: https://fiorisfront.pages.dev/sitemap.xml
