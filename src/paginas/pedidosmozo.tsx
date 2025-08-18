@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "../index.css"; // critical CSS (minimal layout & skeletons, loaded immediately)
-// pedidosmozo.css will be loaded dynamically to avoid render-blocking
 const ModalDetallePedido = React.lazy(() => import("../modales/modal_detalle_pedido"));
 
 interface Producto {
