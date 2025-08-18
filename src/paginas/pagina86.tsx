@@ -17,6 +17,7 @@ const Pagina86: React.FC = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [productos, setProductos] = useState<Producto[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [query, setQuery] = useState<string>("");
 
   const fetchProductos = async () => {
     setCargando(true);
@@ -58,9 +59,27 @@ const Pagina86: React.FC = () => {
 
   if (cargando) return <div>Cargando productos...</div>;
 
+  const productosFiltrados = productos.filter((p) =>
+    p.Nombre.toLowerCase().includes(query.trim().toLowerCase())
+  );
+
   return (
-    <div>
+    <div className="pagina86-container">
       <h2>Gestión rápida de productos</h2>
+
+      <div className="search-bar">
+        <input
+          type="search"
+          placeholder="Buscar producto..."
+          aria-label="Buscar producto"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        {query && (
+          <button className="btn-clear" onClick={() => setQuery("")}>Limpiar</button>
+        )}
+      </div>
+
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
@@ -70,7 +89,7 @@ const Pagina86: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {productos.map((prod) => (
+          {productosFiltrados.map((prod) => (
             <tr key={prod.ID_Producto}>
               <td>{prod.Nombre}</td>
               <td>

@@ -1,8 +1,9 @@
 :root {
   --primary-blue: #1e3a8a;
   --primary-blue-hover: #1e40af;
-  --primary-green: #059669;
-  --primary-green-hover: #047857;
+  /* Verde más neutro, menos saturado */
+  --primary-green: #6aa577;
+  --primary-green-hover: #5a8f67;
   --error-red: #dc2626;
   --error-red-intense: #b91c1c;
   --warning-yellow: #f59e0b;
@@ -37,6 +38,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Utility to enforce aspect ratio placeholders for images to prevent CLS */
+.img-aspect-4-3 { aspect-ratio: 4/3; width:100%; display:block; }
+.img-aspect-16-9 { aspect-ratio: 16/9; width:100%; display:block; }
 
 body,
 html {
@@ -228,7 +233,7 @@ body.body-no-scroll {
   font-weight: 600;
 }
 
-.pedido .btn-servido {
+  .pedido .btn-servido {
   background: linear-gradient(135deg, var(--primary-green), var(--primary-green-hover));
   color: var(--bg-white);
   border: none;
@@ -241,20 +246,21 @@ body.body-no-scroll {
   width: 100%;
   flex-shrink: 0;
   margin-top: auto;
-  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+  /* sombras más suaves y acorde al nuevo tono */
+  box-shadow: 0 4px 16px rgba(106, 165, 119, 0.28);
   z-index: 2;
   min-height: 48px;
 }
 
 .pedido .btn-servido:hover {
   background: linear-gradient(135deg, var(--primary-green-hover), var(--primary-green));
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(106, 165, 119, 0.36);
 }
 
 .pedido .btn-servido:active {
-  transform: scale(0.97);
-  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+  transform: scale(0.99);
+  box-shadow: 0 2px 8px rgba(106, 165, 119, 0.18);
 }
 
 .timer-container {

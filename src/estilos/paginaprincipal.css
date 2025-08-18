@@ -40,6 +40,9 @@ body.body-no-scroll {
   z-index: 100;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  /* Reserve stable height to avoid layout shift when fonts load */
+  min-height: 64px;
+  height: 64px;
 }
 
 .barra-busqueda {
@@ -90,6 +93,8 @@ body.body-no-scroll {
   background-color: #f9fafb;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Reserve vertical space so category strip doesn't push content after render */
+  min-height: 48px;
 }
 
 .categorias-carrusel::-webkit-scrollbar {
@@ -132,6 +137,8 @@ body.body-no-scroll {
   overflow-y: auto;
   height: 100%;
   padding-bottom: 5rem;
+  /* Reserve a sensible minimum area to improve Speed Index and avoid large jumps */
+  min-height: 320px;
 }
 
 .producto {
@@ -536,29 +543,58 @@ body.body-no-scroll {
   transform: translateY(-1px);
 }
 
-.confirmar {
-  background-color: #2563eb;
-  color: #ffffff;
+.botones-pedido {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  align-items: center;
 }
 
-.confirmar:hover:not(:disabled) {
-  background-color: #1d4ed8;
+.botones-pedido button {
+  /* por defecto los botones ocupan su contenido; se ajusta individualmente abajo */
+  flex: 0 0 auto;
+  padding: 0.85rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
 
-.confirmar:disabled {
-  background-color: #d1d5db;
-  color: #6b7280;
-  cursor: not-allowed;
+/* Cancelar: a la izquierda, sin fondo */
+.botones-pedido .cancelar {
+  order: 1; /* asegurar que quede a la izquierda */
+  background: transparent;
+  color: #374151; /* tono neutro */
+  border: none;
+  padding: 0.85rem 1rem;
+}
+
+.botones-pedido .cancelar:hover {
+  background-color: rgba(55, 65, 81, 0.06);
   transform: none;
 }
 
-.cancelar {
-  background-color: #dc2626;
-  color: #ffffff;
+/* Confirmar: a la derecha, verde tenue */
+.botones-pedido .confirmar {
+  order: 2; /* asegurar que quede a la derecha */
+  margin-left: auto; /* empuja al extremo derecho */
+  background-color: #bbf7d0; /* verde tenue */
+  color: #065f46; /* texto oscuro sobre verde claro */
+  box-shadow: 0 6px 12px rgba(11, 115, 63, 0.06);
+  border: 1px solid rgba(6, 95, 70, 0.06);
 }
 
-.cancelar:hover {
-  background-color: #b91c1c;
+.botones-pedido .confirmar:hover:not(:disabled) {
+  background-color: #86efac;
+}
+
+.botones-pedido .confirmar:disabled {
+  background-color: #e6f7ec;
+  color: #9ca3a8;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* RESPONSIVE */

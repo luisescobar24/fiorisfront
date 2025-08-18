@@ -6,6 +6,24 @@ import "../estilos/signin.css";
 import axios from "axios";
 
 export default function SignIn() {
+  useEffect(() => {
+    const previousTitle = document.title;
+    const previousIcon = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+    const prevHref = previousIcon?.href || null;
+    document.title = 'Inicio de Sesión - Fioris';
+    if (previousIcon) {
+      previousIcon.href = '/fioris.jpg';
+    } else {
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.href = '/fioris.jpg';
+      document.head.appendChild(link);
+    }
+    return () => {
+      document.title = previousTitle;
+      if (previousIcon && prevHref) previousIcon.href = prevHref;
+    };
+  }, []);
   const [modalAbierto, setModalAbierto] = useState<
     "registro" | "recuperar" | null
   >(null);

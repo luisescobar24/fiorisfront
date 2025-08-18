@@ -40,6 +40,24 @@ interface DetalleBarra {
 }
 
 const PedidosBarra: React.FC = () => {
+  useEffect(() => {
+    const previousTitle = document.title;
+    const previousIcon = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+    const prevHref = previousIcon?.href || null;
+    document.title = 'Pedidos Barra - Fioris';
+    if (previousIcon) {
+      previousIcon.href = '/fioris.jpg';
+    } else {
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.href = '/fioris.jpg';
+      document.head.appendChild(link);
+    }
+    return () => {
+      document.title = previousTitle;
+      if (previousIcon && prevHref) previousIcon.href = prevHref;
+    };
+  }, []);
   const [detallesBarra, setDetallesBarra] = useState<DetalleBarra[]>([]);
   const [, setServidos] = useState<{ [idDetalle: number]: number }>({});
   const navigate = useNavigate();

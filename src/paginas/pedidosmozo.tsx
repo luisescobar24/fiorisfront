@@ -29,6 +29,24 @@ interface Salon {
 const socket = io(import.meta.env.VITE_BACKEND_URL, { transports: ["websocket"] });
 
 const PedidosMozo: React.FC = () => {
+  useEffect(() => {
+    const previousTitle = document.title;
+    const previousIcon = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+    const prevHref = previousIcon?.href || null;
+    document.title = 'Pedidos Mozo - Fioris';
+    if (previousIcon) {
+      previousIcon.href = '/fioris.jpg';
+    } else {
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.href = '/fioris.jpg';
+      document.head.appendChild(link);
+    }
+    return () => {
+      document.title = previousTitle;
+      if (previousIcon && prevHref) previousIcon.href = prevHref;
+    };
+  }, []);
   const primeraCarga = useRef(true);
   const [pedidos, setPedidos] = useState<Salon[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,21 +56,6 @@ const PedidosMozo: React.FC = () => {
   const [modalDetalleOpen, setModalDetalleOpen] = useState(false);
   const [detalleMesa, setDetalleMesa] = useState<{ mesa: string; salon: string } | null>(null);
   const navigate = useNavigate();
-
-  // SEO: set page title and meta description to improve LCP perception and SEO
-  useEffect(() => {
-    const title = "Pedidos - Vista de Mozo | Fioris";
-    document.title = title;
-    const metaName = 'description';
-    const description = 'Visualiza y gestiona pedidos activos por salón y mesa en tiempo real.';
-    let meta = document.querySelector(`meta[name="${metaName}"]`);
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', metaName);
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', description);
-  }, []);
 
   // Fetch initial orders from the backend
   const fetchPedidos = useCallback(async (forzarLoading = false) => {
@@ -283,10 +286,10 @@ const PedidosMozo: React.FC = () => {
   return (
     <main className="pedidos-container" aria-busy={loading}>
       <header className="mozo-header" role="banner">
-        <button type="button" className="btn-ir-perfil" onClick={() => navigate("/perfil")} aria-label="Ir a perfil">
+        <button className="btn-ir-perfil" onClick={() => navigate("/perfil")}>
           Ir a Perfil
         </button>
-        <h1 className="pedidos-activos">Pedidos Activos</h1>
+        <h2 className="pedidos-activos">Pedidos Activos</h2>
       </header>
 
       <section className="filtros-mozo" aria-label="Filtros de pedidos">
@@ -352,7 +355,7 @@ const PedidosMozo: React.FC = () => {
 
                     return Object.entries(grupos).map(([pid, g]) => (
                       <li key={pid} style={{ color: (g.estados[2]?.cantidad ?? 0) === g.total ? "green" : "black" }} className={(g.estados[2]?.cantidad ?? 0) === g.total ? "producto-servido" : ""}>
-                        {g.nombre} {g.total > 1 ? `x${g.total}` : ""}
+                        {g.nombre}
                         <span style={{ marginLeft: 8 }}>
                           {Object.entries(g.estados).map(([estStr, info]) => {
                             const estNum = Number(estStr);

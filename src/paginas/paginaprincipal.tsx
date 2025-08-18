@@ -39,6 +39,24 @@ const socket = io(import.meta.env.VITE_BACKEND_URL, {
 });
 
 const PaginaPrincipal = () => {
+  useEffect(() => {
+    const previousTitle = document.title;
+    const previousIcon = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+    const prevHref = previousIcon?.href || null;
+    document.title = 'Pagina Principal - Fioris';
+    if (previousIcon) {
+      previousIcon.href = '/fioris.jpg';
+    } else {
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.href = '/fioris.jpg';
+      document.head.appendChild(link);
+    }
+    return () => {
+      document.title = previousTitle;
+      if (previousIcon && prevHref) previousIcon.href = prevHref;
+    };
+  }, []);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
   const [productos, setProductos] = useState<Producto[]>([]);

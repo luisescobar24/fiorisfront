@@ -71,6 +71,24 @@ const NavButton: React.FC<{
 );
 
 const Perfil: React.FC = () => {
+  useEffect(() => {
+    const previousTitle = document.title;
+    const previousIcon = document.querySelector("link[rel~='icon']") as HTMLLinkElement | null;
+    const prevHref = previousIcon?.href || null;
+    document.title = 'Perfil - Fioris';
+    if (previousIcon) {
+      previousIcon.href = '/fioris.jpg';
+    } else {
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.href = '/fioris.jpg';
+      document.head.appendChild(link);
+    }
+    return () => {
+      document.title = previousTitle;
+      if (previousIcon && prevHref) previousIcon.href = prevHref;
+    };
+  }, []);
   const [vistaActual, setVistaActual] = useState<VistaActual>("configuracion");
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [cargandoUsuario, setCargandoUsuario] = useState(true);
