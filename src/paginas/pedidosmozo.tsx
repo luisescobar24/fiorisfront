@@ -1,12 +1,7 @@
-import React, {
-  useEffect,
-  useState,
-  useCallback,
-  useMemo,
-  useRef,
-} from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import axios from "axios";
 import "../estilos/pedidosmozo.css";
 import ModalDetallePedido from "../modales/modal_detalle_pedido";
 
@@ -31,9 +26,7 @@ interface Salon {
   mesas: Mesa[];
 }
 
-const socket = io(import.meta.env.VITE_BACKEND_URL, {
-  transports: ["websocket"],
-});
+const socket = io(import.meta.env.VITE_BACKEND_URL, { transports: ["websocket"] });
 
 const PedidosMozo: React.FC = () => {
   const primeraCarga = useRef(true);
@@ -50,14 +43,11 @@ const PedidosMozo: React.FC = () => {
   const fetchPedidos = useCallback(async (forzarLoading = false) => {
     if (primeraCarga.current || forzarLoading) setLoading(true);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/pedidos/agrupados`,
-        {
-          credentials: "include",
-        }
-      );
-      if (!res.ok) throw new Error("Error fetching pedidos");
-      const data = await res.json();
+      // Use axios to fetch; this will usually paint faster and is consistent with the project
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/pedidos/agrupados`, {
+        withCredentials: true,
+      });
+      const data = res.data;
 
       const salones: Salon[] = Object.entries(data).map(
         ([salon, mesasObj]) => ({
@@ -292,7 +282,25 @@ const PedidosMozo: React.FC = () => {
     [pedidos, salonFiltro]
   );
 
-  if (loading) return <div className="pedido-vacio">Cargando pedidos...</div>;
+  // Skeletons: while loading, render animated placeholders to reserve layout and reduce CLS/LCP
+  const renderSkeletons = (count = 3) => (
+    <>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={`skeleton-${i}`} className="mozo-mesa skeleton-card" aria-hidden>
+          <h3 className="skeleton-line skeleton-title" />
+          <ul>
+            <li className="skeleton-line skeleton-item" />
+            <li className="skeleton-line skeleton-item short" />
+            <li className="skeleton-line skeleton-item" />
+          </ul>
+          <div className="mesa-botones">
+            <div className="skeleton-line skeleton-btn" />
+            <div className="skeleton-line skeleton-btn small" />
+          </div>
+        </div>
+      ))}
+    </>
+  );
 
   return (
     <div className="pedidos-container">
@@ -340,17 +348,19 @@ const PedidosMozo: React.FC = () => {
       </label>
       </div>
       <div className="pedidos-grid">
-      {pedidosFiltrados.length === 0 ? (
-        <div className="pedido-vacio">
-        <span>No hay pedidos activos</span>
-        </div>
-      ) : (
-        pedidosFiltrados.map((salon: Salon) =>
-          salon.mesas.map((mesa: Mesa) => (
-            <div key={`${salon.salon}-${mesa.numero}`} className="mozo-mesa">
-              <h3>
-                Mesa {mesa.numero} - {salon.salon}
-              </h3>
+        {loading ? (
+          renderSkeletons(3)
+        ) : pedidosFiltrados.length === 0 ? (
+          <div className="pedido-vacio">
+            <span>No hay pedidos activos</span>
+          </div>
+        ) : (
+          pedidosFiltrados.map((salon: Salon) =>
+            salon.mesas.map((mesa: Mesa) => (
+              <div key={`${salon.salon}-${mesa.numero}`} className="mozo-mesa">
+                <h3>
+                  Mesa {mesa.numero} - {salon.salon}
+                </h3>
               <ul>
                 {(() => {
                   const grupos: Record<

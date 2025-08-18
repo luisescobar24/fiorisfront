@@ -142,6 +142,7 @@ body.body-no-scroll {
 /* GRID DE PEDIDOS */
 .pedidos-grid {
   display: grid;
+  /* default: large screens / TV */
   grid-template-columns: repeat(6, 1fr);
   gap: var(--spacing-xl);
   margin-top: var(--spacing-xl);
@@ -163,11 +164,50 @@ body.body-no-scroll {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 11.875rem;
+  /* reserve vertical space to avoid layout shifts when content loads */
+  min-height: 12rem;
   max-height: 25rem;
   overflow: hidden;
   cursor: pointer;
   position: relative;
+}
+
+/* SKELETONS */
+.skeleton-card {
+  pointer-events: none;
+}
+.skeleton-line {
+  display: block;
+  background: linear-gradient(90deg, #f3f4f6 0%, #eceff1 50%, #f3f4f6 100%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.skeleton-title {
+  width: 60%;
+  height: 1.2rem;
+  margin-bottom: var(--spacing-sm);
+}
+.skeleton-item {
+  height: 0.9rem;
+  margin-bottom: var(--spacing-xs);
+  width: 100%;
+}
+.skeleton-item.short {
+  width: 55%;
+}
+.skeleton-btn {
+  height: 2rem;
+  width: 40%;
+  border-radius: 999px;
+}
+.skeleton-btn.small {
+  width: 28%;
+}
+
+@keyframes pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .mozo-mesa.timer-green {
@@ -503,14 +543,39 @@ body.body-no-scroll {
 /* RESPONSIVE */
 @media (max-width: 87.5rem) {
   .pedidos-grid {
-    grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   }
 }
 
 @media (max-width: 56.25rem) {
   .pedidos-grid {
+    /* tablet */
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* Mobile: 1 column */
+@media (max-width: 37.5rem) {
+  .pedidos-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: var(--spacing-lg);
+  }
+}
+
+/* Desktop standard: 3 columns */
+@media (min-width: 56.25rem) and (max-width: 87.5rem) {
+  .pedidos-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Large desktop: 4 columns */
+@media (min-width: 87.5rem) and (max-width: 120rem) {
+  .pedidos-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* TV / very large: keep 6 columns but increase gaps */
+@media (min-width: 120rem) {
+  .pedidos-grid { grid-template-columns: repeat(6, 1fr); gap: calc(var(--spacing-xl) * 1.25); }
 }
 
 @media (max-width: 37.5rem) {
