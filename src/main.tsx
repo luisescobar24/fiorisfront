@@ -1,4 +1,3 @@
-import "./estilos/cls-fixes.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import Modal from "react-modal";
