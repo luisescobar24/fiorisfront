@@ -1,0 +1,1 @@
+sin usar px y usa no usar la etiqueta viewport, usar unidades responsivas usa % vw vh o rem
