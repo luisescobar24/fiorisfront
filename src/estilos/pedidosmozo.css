@@ -55,6 +55,16 @@ html {
   background: var(--bg-white);
 }
 
+/* utility: visually hidden for accessibility (screen readers) */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+  border: 0; padding: 0; margin: -1px;
+}
+
 /* HEADER */
 .mozo-header {
   position: sticky;
@@ -106,6 +116,8 @@ html {
   gap: var(--spacing-md);
   padding: 0 var(--spacing-lg);
   flex-wrap: wrap;
+  /* reserve vertical space so filters do not push content on first paint */
+  min-height: 3.25rem;
 }
 
 .filtros-mozo label {

@@ -39,6 +39,21 @@ const PedidosMozo: React.FC = () => {
   const [detalleMesa, setDetalleMesa] = useState<{ mesa: string; salon: string } | null>(null);
   const navigate = useNavigate();
 
+  // SEO: set page title and meta description to improve LCP perception and SEO
+  useEffect(() => {
+    const title = "Pedidos - Vista de Mozo | Fioris";
+    document.title = title;
+    const metaName = 'description';
+    const description = 'Visualiza y gestiona pedidos activos por salón y mesa en tiempo real.';
+    let meta = document.querySelector(`meta[name="${metaName}"]`);
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', metaName);
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', description);
+  }, []);
+
   // Fetch initial orders from the backend
   const fetchPedidos = useCallback(async (forzarLoading = false) => {
     if (primeraCarga.current || forzarLoading) setLoading(true);
@@ -268,10 +283,10 @@ const PedidosMozo: React.FC = () => {
   return (
     <main className="pedidos-container" aria-busy={loading}>
       <header className="mozo-header" role="banner">
-        <button className="btn-ir-perfil" onClick={() => navigate("/perfil")}>
+        <button type="button" className="btn-ir-perfil" onClick={() => navigate("/perfil")} aria-label="Ir a perfil">
           Ir a Perfil
         </button>
-        <h2 className="pedidos-activos">Pedidos Activos</h2>
+        <h1 className="pedidos-activos">Pedidos Activos</h1>
       </header>
 
       <section className="filtros-mozo" aria-label="Filtros de pedidos">
