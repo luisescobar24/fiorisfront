@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
 import axios from "axios";
-import "../estilos/pedidosmozo.css";
-import ModalDetallePedido from "../modales/modal_detalle_pedido";
+import "../index.css"; // critical CSS (minimal layout & skeletons, loaded immediately)
+// pedidosmozo.css will be loaded dynamically to avoid render-blocking
+const ModalDetallePedido = React.lazy(() => import("../modales/modal_detalle_pedido"));
 
 interface Producto {
   id: string;
@@ -26,12 +26,13 @@ interface Salon {
   mesas: Mesa[];
 }
 
-const socket = io(import.meta.env.VITE_BACKEND_URL, { transports: ["websocket"] });
+// Socket will be created lazily to avoid loading socket.io-client during initial load
 
 const PedidosMozo: React.FC = () => {
   const primeraCarga = useRef(true);
   const [pedidos, setPedidos] = useState<Salon[]>([]);
   const [loading, setLoading] = useState(true);
+  const socketRef = useRef<any>(null); // FIXME: narrow type from socket.io-client
   const [salonFiltro, setSalonFiltro] = useState<string>("");
   const [mesaFiltro, setMesaFiltro] = useState<string>("");
 
@@ -190,39 +191,71 @@ const PedidosMozo: React.FC = () => {
 
   // WebSocket listeners
   useEffect(() => {
-    fetchPedidos(true);
-    socket.on("connect", () => {
-      console.log("Conectado al servidor WebSocket");
-    });
-    socket.on("nuevo-pedido", () => {
-      fetchPedidos();
-    });
-    socket.on(
-      "producto-servido",
-      (data: { salon: string; mesa: string; productoId: number; detalleId: number; estado: number }) => {
-        if (data.salon && data.mesa && data.detalleId !== undefined && data.estado !== undefined) {
-          updateProductoServido(data.salon, data.mesa, data.estado, data.detalleId);
-        } else {
-          console.error("Datos incompletos en producto-servido:", data);
+    // load dynamic page CSS (non-critical) and then initialize data + websocket
+    let mounted = true;
+    (async () => {
+      try {
+        // load page-specific styles after initial paint to avoid render-blocking
+        await import("../estilos/pedidosmozo.css");
+      } catch (err) {
+        // failing to load non-critical CSS shouldn't block page
+        console.warn("No se pudo cargar pedidosmozo.css dinámicamente:", err);
+      }
+
+      // Fetch initial data (shows skeletons immediately)
+      fetchPedidos(true);
+
+      try {
+        const mod = await import("socket.io-client");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { io } = mod as any;
+        if (!mounted) return;
+        socketRef.current = io(import.meta.env.VITE_BACKEND_URL, { transports: ["websocket"] });
+        socketRef.current.on("connect", () => {
+          console.log("Conectado al servidor WebSocket");
+        });
+        socketRef.current.on("nuevo-pedido", () => {
+          fetchPedidos();
+        });
+        socketRef.current.on(
+          "producto-servido",
+          (data: { salon: string; mesa: string; productoId: number; detalleId: number; estado: number }) => {
+            if (data.salon && data.mesa && data.detalleId !== undefined && data.estado !== undefined) {
+              updateProductoServido(data.salon, data.mesa, data.estado, data.detalleId);
+            } else {
+              console.error("Datos incompletos en producto-servido:", data);
+            }
+          }
+        );
+        socketRef.current.on("producto-eliminado", ({ detalleId }: { detalleId: number }) => {
+          setPedidos((prevPedidos) =>
+            prevPedidos.map((s) => ({
+              ...s,
+              mesas: s.mesas.map((m) => ({
+                ...m,
+                productos: m.productos.filter((p) => p.ID_Detalle !== detalleId),
+              })),
+            }))
+          );
+        });
+      } catch (err) {
+        console.warn("No se pudo inicializar socket.io-client dinámicamente:", err);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+      if (socketRef.current) {
+        try {
+          socketRef.current.off("connect");
+          socketRef.current.off("nuevo-pedido");
+          socketRef.current.off("producto-servido");
+          socketRef.current.off("producto-eliminado");
+          socketRef.current.disconnect?.();
+        } catch (e) {
+          /* ignore cleanup errors */
         }
       }
-    );
-    socket.on("producto-eliminado", ({ detalleId }) => {
-      setPedidos((prevPedidos) =>
-        prevPedidos.map((s) => ({
-          ...s,
-          mesas: s.mesas.map((m) => ({
-            ...m,
-            productos: m.productos.filter((p) => p.ID_Detalle !== detalleId),
-          })),
-        }))
-      );
-    });
-    return () => {
-      socket.off("connect");
-      socket.off("nuevo-pedido");
-      socket.off("producto-servido");
-      socket.off("producto-eliminado");
     };
   }, [fetchPedidos, updateProductoServido]);
 
@@ -426,18 +459,20 @@ const PedidosMozo: React.FC = () => {
 
       {/* Modal de Detalle */}
       {modalDetalleOpen && detalleMesa && (
-        <ModalDetallePedido
-          mesa={detalleMesa.mesa}
-          salon={detalleMesa.salon}
-          open={modalDetalleOpen}
-          onEliminarProducto={handleEliminarProducto}
-          onPreCuenta={() => {}}
-          onCancelar={() => setModalDetalleOpen(false)}
-          onGuardarCambios={async () => {
-            setModalDetalleOpen(false);
-            await fetchPedidos();
-          }}
-        />
+        <Suspense fallback={<div className="modal-loading" aria-hidden>Loading...</div>}>
+          <ModalDetallePedido
+            mesa={detalleMesa.mesa}
+            salon={detalleMesa.salon}
+            open={modalDetalleOpen}
+            onEliminarProducto={handleEliminarProducto}
+            onPreCuenta={() => {}}
+            onCancelar={() => setModalDetalleOpen(false)}
+            onGuardarCambios={async () => {
+              setModalDetalleOpen(false);
+              await fetchPedidos();
+            }}
+          />
+        </Suspense>
       )}
     </main>
   );
